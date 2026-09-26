@@ -14,7 +14,7 @@ function TrappedCharacter({ look, stage }) {
       <path className="rift-glow" d="M150 10 L205 70 L185 120 L240 170 L195 230 L215 300 L150 270 L85 305 L100 235 L55 175 L110 125 L90 65 Z"
         fill="var(--red-tint)" stroke="var(--red)" strokeWidth="3" strokeLinejoin="round" />
       <path d="M150 40 L185 85 L170 125 L210 170 L175 215 L185 270 L150 250 L115 272 L125 218 L90 172 L130 128 L115 82 Z" fill="var(--bg)" />
-      <g opacity="0.6"><MiniSelf look={look} stage={stage} x={110} y={104} size={80} /></g>
+      <g opacity="0.6"><MiniSelf look={look} stage={stage} x={113} y={118} size={80} /></g>
       {[122, 138, 154, 170, 186].map((x) => <line key={x} x1={x} y1="110" x2={x} y2="205" stroke="var(--red)" strokeWidth="2.5" opacity="0.8" />)}
       <line x1="112" y1="110" x2="194" y2="110" stroke="var(--red)" strokeWidth="3" />
       <line x1="112" y1="205" x2="194" y2="205" stroke="var(--red)" strokeWidth="3" />

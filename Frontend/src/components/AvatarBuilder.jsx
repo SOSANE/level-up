@@ -31,7 +31,7 @@ export default function AvatarBuilder({ look, onChange, level = 1, premium = fal
     <div className="row wrap" style={{ gap: 28, alignItems: 'flex-start' }}>
       <div className="col builder-stage" style={{ flex: '0 1 300px', alignItems: 'center', gap: 12 }}>
         <div className="portrait" style={{ '--c': look.outfit, width: '100%' }}>
-          <MiniSelf look={look} stage={preview} size={200} title={`Your character as ${st.title}`} />
+          <MiniSelf look={look} stage={preview} size={240} title={`Your character as ${st.title}`} />
           <div className="col" style={{ alignItems: 'center', gap: 2 }}>
             <span className="display" style={{ fontSize: 18 }}>{st.title}</span>
             <span className="muted" style={{ fontSize: 13 }}>Rank {st.rank} · Lv.{st.lv} · {st.outfit}</span>
