@@ -1,6 +1,9 @@
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { usePlayer } from './api/player.jsx';
 import Nav from './components/Nav.jsx';
+import DemoBanner from './components/DemoBanner.jsx';
+import AwakeningIntro from './components/AwakeningIntro.jsx';
 import Story from './pages/Story.jsx';
 import Login from './pages/Login.jsx';
 import Onboarding from './pages/Onboarding.jsx';
@@ -18,11 +21,24 @@ function RequirePlayer() {
 }
 
 function WithNav() {
-  return (<><Nav /><Outlet /></>);
+  return (<><Nav /><DemoBanner /><Outlet /></>);
 }
 
 export default function App() {
+  const { demo, enterDemo } = usePlayer();
+  const { search } = useLocation();
+  const navigate = useNavigate();
+
+  // Share a link ending in ?demo with judges: it opens straight into the Rank S showcase.
+  useEffect(() => {
+    if (new URLSearchParams(search).has('demo')) {
+      if (!demo) enterDemo();
+      navigate('/dashboard', { replace: true });
+    }
+  }, [search, demo, enterDemo, navigate]);
+
   return (
+    <>
     <Routes>
       <Route path="/" element={<Story />} />
       <Route path="/login" element={<Login />} />
@@ -39,5 +55,7 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <AwakeningIntro />
+    </>
   );
 }

@@ -1,12 +1,11 @@
 import { usePlayer } from '../api/player.jsx';
-import { Link } from 'react-router-dom';
 import { MATERIAL } from '../api/data.js';
-import { STAGES, lookOf, stageOf } from '../api/look.js';
+import { lookOf, stageOf } from '../api/look.js';
 import { today } from '../api/game.js';
 import CharacterCard from '../components/CharacterCard.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
-import MiniSelf from '../components/MiniSelf.jsx';
+import EvolutionTimeline from '../components/EvolutionTimeline.jsx';
 import { MaterialIcon, Potion } from '../components/ui.jsx';
 
 const SHOP = [
@@ -64,24 +63,7 @@ export default function Profile() {
       </div>
 
       <div className="col" style={{ flex: '1 1 520px', gap: 20 }}>
-        <SystemWindow title="CHARACTER DEVELOPMENT" icon={null} tone="crimson">
-          <p className="sys-note">[Stage {stage + 1} of {STAGES.length} · {STAGES[stage].title}. Rank up to evolve.]</p>
-          <div className="evo-grid">
-            {STAGES.map((s, k) => {
-              const open = k <= stage;
-              return (
-                <div key={s.rank} className={`evo-card${k === stage ? ' current' : ''}${open ? '' : ' locked'}`}>
-                  <MiniSelf look={look} stage={k} size={130} locked={!open} title={open ? `${s.title}, Level ${s.lv}` : undefined} />
-                  <span className="evo-lv">Lv.{s.lv}</span>
-                  <span className="evo-name">{open ? s.title : `Rank ${s.rank}`}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
-            <Link className="btn btn-ghost" to="/customize">Customize your look</Link>
-          </div>
-        </SystemWindow>
+        <EvolutionTimeline look={look} stage={stage} level={player.level} />
         <SystemWindow title={`${month.toUpperCase()} HISTORY`} icon={null}>
           <div className="row muted" style={{ gap: 14, fontSize: 12, justifyContent: 'center', marginBottom: 14 }}>
               <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ background: 'var(--blue)' }} />All 4</span>

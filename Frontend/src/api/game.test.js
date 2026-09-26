@@ -1,7 +1,8 @@
 // Run: npm test
 import assert from 'node:assert/strict';
-import { addQuest, canAddQuest, checkMissedDays, completeQuest, rankOf, sendToRift, stats, today, todaysQuests } from './game.js';
+import { addQuest, canAddQuest, checkMissedDays, completeQuest, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
 import { CATEGORIES } from './data.js';
+import { showcasePlayer } from './demo.js';
 
 const player = () => ({
   level: 1, xp: 0, coins: 50, chosen: CATEGORIES.slice(0, 10).map((c) => c.id), bars: {}, materials: {},
@@ -51,5 +52,16 @@ m.lastCheck = today(d);
 checkMissedDays(m);
 assert.equal(m.rift.days, 2);
 assert.equal(m.lastCheck, today());
+
+// Judge demo: a Rank S version of the same player, built without touching the real one.
+const real = player();
+const before = JSON.stringify(real);
+const demo = showcasePlayer({ ...real, name: 'Soumeya' });
+assert.equal(rankOf(demo.level), 'S');
+assert.equal(demo.name, 'Soumeya');
+assert.ok(demo.onboarded && demo.demo);
+assert.ok(streak(demo) >= 100, `streak ${streak(demo)}`);
+assert.equal(Object.values(demo.day.status).filter((v) => v === 'done').length, 2);
+assert.equal(JSON.stringify(real), before, 'real player unchanged');
 
 console.log('game rules ok');

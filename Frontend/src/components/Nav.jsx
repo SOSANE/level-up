@@ -4,7 +4,7 @@ import { RANK_COLOR, rankOf } from '../api/game.js';
 import { Bar, CoinIcon } from './ui.jsx';
 
 export default function Nav() {
-  const { player } = usePlayer();
+  const { player, demo, enterDemo } = usePlayer();
   const r = rankOf(player.level);
   return (
     <nav id="nav">
@@ -15,6 +15,7 @@ export default function Nav() {
         <NavLink to="/profile" className="navlink">Profile</NavLink>
       </div>
       <div className="row" style={{ gap: 10 }}>
+        {!demo && <button className="pill demo-pill hide-sm" onClick={enterDemo} title="Show the app as a Rank S player">★ Judge demo</button>}
         <span className="pill coins" aria-label={`${player.coins} coins`}><CoinIcon /><b>{player.coins}</b></span>
         <span className="pill hide-sm" aria-label={`${player.xp} of 1000 EXP`}>
           <span className="mono" style={{ color: 'var(--blue)', fontSize: 11 }}>EXP</span>

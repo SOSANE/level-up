@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { usePlayer } from '../api/player.jsx';
 
 const SCENES = [
   { title: 'You were good. Really good.', body: 'Up before the sun. Top of every list. You had a plan, and you kept it.', system: '[STATUS] Discipline: high · Energy: high · Streak: unbroken', color: 'var(--blue)' },
@@ -13,6 +14,8 @@ const HS = [10, 22, 16, 30, 12, 26, 34, 18, 24, 14, 32, 20, 28, 12, 22, 36, 16, 
 export default function Story() {
   const [i, setI] = useState(0);
   const [muted, setMuted] = useState(false);
+  const { enterDemo } = usePlayer();
+  const navigate = useNavigate();
   const s = SCENES[i];
   const last = i === SCENES.length - 1;
 
@@ -30,6 +33,7 @@ export default function Story() {
         <div className="brand" style={{ fontSize: 18 }}>SECOND AWAKENING</div>
         <div className="row" style={{ gap: 28 }}>
           <span className="mono muted hide-sm" style={{ fontSize: 13 }}>CHAPTER 0{i + 1} / 05</span>
+          <button className="pill demo-pill" onClick={() => { enterDemo(); navigate('/dashboard'); }}>★ Judge demo (Rank S)</button>
           <Link to="/login" style={{ fontSize: 15, color: 'var(--muted)', textDecoration: 'none', padding: '12px 4px' }}>Skip intro</Link>
         </div>
       </header>
