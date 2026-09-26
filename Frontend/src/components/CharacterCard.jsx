@@ -12,7 +12,7 @@ export default function CharacterCard({ player }) {
   const stage = stageOf(player.level);
   const r = rankOf(player.level);
   return (
-    <SystemWindow title="CHARACTER CARD" icon={null} tone="crimson">
+    <SystemWindow title="CHARACTER CARD" icon={null} tone="violet">
       <div className="col" style={{ gap: 16 }}>
         <div className="portrait" style={{ '--c': look.outfit }}>
           <MiniSelf look={look} stage={stage} size={170} crop="bust" title={`${player.name}, ${STAGES[stage].title}`} />
@@ -27,13 +27,21 @@ export default function CharacterCard({ player }) {
         </div>
         <div className="col" style={{ gap: 8 }}>
           <div className="level-line">LEVEL {player.level}</div>
-          <Bar pct={player.xp / 10} h={6} color="var(--crimson)" label="Experience" />
+          <Bar pct={player.xp / 10} h={6} color="var(--violet)" label="Experience" />
           <span className="muted" style={{ fontSize: 12, textAlign: 'center' }}>{player.xp} / 1000 EXP</span>
         </div>
-        <dl className="stat-list">
-          {stats(player).map((s) => (
-            <div key={s.name} style={{ '--c': PROOF_COLOR[s.proof] }}><dt>{s.name.toUpperCase()}</dt><dd>{s.value}</dd></div>
-          ))}
+        <dl className="stat-bars">
+          {(() => {
+            const list = stats(player);
+            const top = Math.max(...list.map((x) => x.value)) * 1.1;
+            return list.map((st) => (
+              <div key={st.name} style={{ '--c': PROOF_COLOR[st.proof] }}>
+                <dt>{st.name.slice(0, 3).toUpperCase()}</dt>
+                <dd className="stat-track" aria-hidden="true"><span style={{ width: `${(st.value / top) * 100}%` }} /></dd>
+                <dd className="stat-val"><span className="sr-only">{st.name} </span>{st.value}</dd>
+              </div>
+            ));
+          })()}
         </dl>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div className="orb-box">
@@ -42,7 +50,7 @@ export default function CharacterCard({ player }) {
           </div>
           <div className="orb-box">
             <span className="orb">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--crimson-soft)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--violet-soft)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 3c1 3 4 4.5 4 8.5A4 4 0 0 1 8 11.5c0-1.5.7-2.6 1.5-3.5.2 1.6 1 2.5 2 2.5 0-3-1-5 .5-7.5z" /><path d="M6 17c1.5 2.5 3.5 4 6 4s4.5-1.5 6-4" />
               </svg>
             </span>

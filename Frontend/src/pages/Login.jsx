@@ -100,10 +100,10 @@ export default function Login() {
           return (
             <div className="col" style={{ width: 640, maxWidth: '100%', gap: 28 }}>
               <div className="row between">
-                <span className="mono" style={{ color: 'var(--crimson)' }}>GEMINI · ADAPTIVE ASSESSMENT</span>
+                <span className="mono" style={{ color: 'var(--violet)' }}>GEMINI · ADAPTIVE ASSESSMENT</span>
                 <span className="mono muted">{q + 1} / {QUESTIONS.length}</span>
               </div>
-              <Bar pct={((q + (cur ? 1 : 0)) / QUESTIONS.length) * 100} color="var(--crimson)" label="Assessment progress" />
+              <Bar pct={((q + (cur ? 1 : 0)) / QUESTIONS.length) * 100} color="var(--violet)" label="Assessment progress" />
               <h2 className="display" style={{ fontSize: 32, lineHeight: 1.2 }}>{Q.text}</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
                 {Q.opts.map((o) => (

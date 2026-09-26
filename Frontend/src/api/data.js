@@ -36,15 +36,15 @@ export const MIN_CATEGORIES = 10;
 
 export const PROOF_LABEL = { PHOTO: 'Photo', VITALS: 'Vitals', FOCUS: 'Focus', HONOR: 'Honor' };
 // One accent per verification type, reused for its material, stat, bars and quest icons (hex: the canvas reads these too).
-export const PROOF_COLOR = { VITALS: '#FF5C74', FOCUS: '#0ECCED', PHOTO: '#B9D3E2', HONOR: '#4D8FE8' };
+export const PROOF_COLOR = { VITALS: '#FF5C70', FOCUS: '#4FB8FF', PHOTO: '#34D399', HONOR: '#A56BFF' };
 export const PROOF_CTA = { PHOTO: 'Upload photo proof', VITALS: 'Run vitals check', FOCUS: 'End focus session', HONOR: 'I did it' };
 
 // Each verification type drops its own crafting material.
 export const MATERIAL = {
-  VITALS: { name: 'Iron ore', color: '#FF5C74' },
-  PHOTO: { name: 'Spirit herb', color: '#B9D3E2' },
-  FOCUS: { name: 'Mana crystal', color: '#0ECCED' },
-  HONOR: { name: 'Oath token', color: '#4D8FE8' }
+  VITALS: { name: 'Iron ore', color: '#FF5C70' },
+  PHOTO: { name: 'Spirit herb', color: '#34D399' },
+  FOCUS: { name: 'Mana crystal', color: '#4FB8FF' },
+  HONOR: { name: 'Oath token', color: '#A56BFF' }
 };
 
 

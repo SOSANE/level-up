@@ -6,11 +6,12 @@ import CharacterCard from '../components/CharacterCard.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
 import EvolutionTimeline from '../components/EvolutionTimeline.jsx';
+import StatRadar from '../components/StatRadar.jsx';
 import { MaterialIcon, Potion } from '../components/ui.jsx';
 
 const SHOP = [
   { id: 'freeze', name: 'Frost elixir', desc: 'Freezes your streak for one missed day', cost: 100, color: 'var(--blue)' },
-  { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150, color: 'var(--crimson)' },
+  { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150, color: 'var(--violet)' },
   { id: 'outfit', name: 'Essence of style', desc: 'Unlocks 3 premium outfit colors', cost: 400, color: 'var(--sapphire-light)' }
 ];
 const DAY_LOOK = {
@@ -41,7 +42,7 @@ export default function Profile() {
 
   return (
     <div className="page col" style={{ gap: 28 }}>
-      <PageHeader eyebrow="PLAYER PROFILE" color="var(--crimson-soft)" title={player.name}
+      <PageHeader eyebrow="PLAYER PROFILE" color="var(--violet-soft)" title={player.name}
         sub="Your character, what you’ve collected, and where to spend your coins." />
     <div className="row wrap" style={{ gap: 28, alignItems: 'flex-start' }}>
       <div className="col" style={{ flex: '1 1 400px', maxWidth: 460, gap: 20 }}>
@@ -50,14 +51,25 @@ export default function Profile() {
           Awakened {new Date(player.started + 'T00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} · {player.questsDone} quests done · Level up needs 1000 EXP and every path bar full.
         </p>
 
-        <SystemWindow title="MATERIALS" icon={null}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-            {Object.values(MATERIAL).map((m) => (
-              <div key={m.name} className="row stat" style={{ flexDirection: 'row', gap: 10 }}>
-                <MaterialIcon color={m.color} size={24} /><span className="grow">{m.name}</span><b>{player.materials[m.name] || 0}</b>
-              </div>
+        <SystemWindow title="STATUS" icon={null}>
+          <StatRadar player={player} />
+          <p className="sys-note" style={{ margin: '4px 0 0' }}>[Stats rise with every quest of their type, and with every level.]</p>
+        </SystemWindow>
+
+        <SystemWindow title="INVENTORY" icon={null} tone="violet">
+          <div className="inv-grid">
+            {[
+              ...Object.values(MATERIAL).map((m) => ({ key: m.name, name: m.name, n: player.materials[m.name] || 0, icon: <MaterialIcon color="#F4F8FF" size={30} />, glow: m.color })),
+              ...SHOP.filter((it) => player.items[it.id]).map((it) => ({ key: it.id, name: it.name, n: player.items[it.id], icon: <Potion color={it.color} size={28} />, glow: it.color }))
+            ].concat(Array(12).fill(null)).slice(0, 12).map((slot, k) => (
+              slot
+                ? <div key={slot.key} className={`inv-slot${slot.n ? '' : ' empty'}`} style={{ '--c': slot.glow }} title={`${slot.name} × ${slot.n}`} aria-label={`${slot.name}: ${slot.n}`}>
+                    {slot.icon}{slot.n > 0 && <span className="inv-count">{slot.n}</span>}
+                  </div>
+                : <div key={`e${k}`} className="inv-slot empty" aria-hidden="true" />
             ))}
           </div>
+          <p className="sys-note" style={{ margin: '12px 0 0' }}>[Materials drop from quests · potions come from the marketplace]</p>
         </SystemWindow>
 
       </div>
@@ -77,7 +89,7 @@ export default function Profile() {
           </div>
         </SystemWindow>
 
-        <SystemWindow title="POTION MARKETPLACE" icon={null} tone="crimson">
+        <SystemWindow title="POTION MARKETPLACE" icon={null} tone="violet">
           <div className="col" style={{ gap: 14 }}>
             <p className="sys-note">[Balance: <span className="gold">{player.coins} coins</span>]</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>

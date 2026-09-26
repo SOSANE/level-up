@@ -50,7 +50,7 @@ export default function Rift() {
       </span>
       <TrappedCharacter look={lookOf(player)} stage={stageOf(player.level)} />
       <h1 className="display" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>{player.name} is trapped in the Rift.</h1>
-      <div role="timer" aria-label="Time until release" style={{ fontFamily: 'Oxanium, sans-serif', fontWeight: 800, fontSize: 'clamp(56px, 12vw, 110px)', lineHeight: 1 }}>
+      <div role="timer" aria-label="Time until release" style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: 'clamp(56px, 12vw, 110px)', lineHeight: 1 }}>
         {free ? '00:00' : mmss(left)}
       </div>
 

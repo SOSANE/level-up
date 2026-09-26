@@ -116,7 +116,7 @@ export default function Gate() {
                   const c = isMe ? 'var(--gold)' : target ? 'var(--blue)' : 'var(--line2)';
                   return (
                     <div key={l} className="col" style={{ height: 58, borderRadius: 'var(--r-md)', border: `1.5px solid ${c}`, background: isMe ? 'var(--gold-tint)' : target ? 'var(--blue-tint)' : 'var(--deep)', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
-                      <span style={{ fontFamily: 'Oxanium, sans-serif', fontWeight: 800, fontSize: 20, color: isMe || target ? 'var(--fg)' : 'var(--dim)' }}>{l}</span>
+                      <span style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: 20, color: isMe || target ? 'var(--fg)' : 'var(--dim)' }}>{l}</span>
                       <span className="muted" style={{ fontSize: 10 }}>{isMe ? 'You' : `Lv ${lv}`}</span>
                     </div>
                   );

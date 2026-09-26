@@ -15,7 +15,7 @@ export default function EvolutionTimeline({ look, stage, level }) {
   const unlocked = open <= stage;
 
   return (
-    <SystemWindow title="CHARACTER DEVELOPMENT" icon={null} tone="crimson">
+    <SystemWindow title="CHARACTER DEVELOPMENT" icon={null} tone="violet">
       <p className="sys-note">[Stage {stage + 1} of {STAGES.length} · {STAGES[stage].title}. {demo ? 'Previewing every rank.' : 'Rank up to evolve.'}]</p>
 
       <div className="row between wrap" style={{ gap: 12, marginBottom: 14 }}>
@@ -49,7 +49,7 @@ export default function EvolutionTimeline({ look, stage, level }) {
       </div>
 
       <dialog ref={dialog} className="evo-dialog" aria-labelledby="evo-title" onClick={(e) => { if (e.target === dialog.current) dialog.current.close(); }}>
-        <SystemWindow title={`RANK ${s.rank}`} icon={null} tone={s.rank === 'S' ? 'crimson' : 'blue'}>
+        <SystemWindow title={`RANK ${s.rank}`} icon={null} tone={s.rank === 'S' ? 'violet' : 'blue'}>
           <div className="col" style={{ alignItems: 'center', gap: 12 }}>
             <div className="portrait" style={{ '--c': look.outfit, width: '100%' }}>
               <MiniSelf look={look} stage={open} size={260} title={`${s.title} preview`} />

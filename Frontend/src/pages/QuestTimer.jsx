@@ -75,7 +75,7 @@ export default function QuestTimer() {
     <div className="fullscreen">
       <span className="mono" style={{ color: 'var(--blue)', fontSize: 13 }}>FOCUS MODE · {quest.name.toUpperCase()} · {PROOF_LABEL[quest.proof].toUpperCase()} PROOF</span>
       <h1 className="display" style={{ fontSize: 'clamp(24px, 4vw, 34px)', maxWidth: 720 }}>{quest.title}</h1>
-      <div role="timer" aria-label="Time left" style={{ fontFamily: 'Oxanium, sans-serif', fontWeight: 800, fontSize: 'clamp(72px, 16vw, 160px)', lineHeight: 1, color: finished ? 'var(--gold)' : 'var(--fg)' }}>
+      <div role="timer" aria-label="Time left" style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: 'clamp(72px, 16vw, 160px)', lineHeight: 1, color: finished ? 'var(--gold)' : 'var(--fg)' }}>
         {mmss(left)}
       </div>
       <div style={{ width: 520, maxWidth: '100%' }}><Bar pct={(1 - left / total) * 100} h={8} color={finished ? 'var(--gold)' : 'var(--blue)'} label="Quest progress" /></div>

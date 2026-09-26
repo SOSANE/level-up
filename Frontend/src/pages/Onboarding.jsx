@@ -76,7 +76,7 @@ export default function Onboarding() {
             <h1 className="page-title">Create your mini self</h1>
             <p className="soft" style={{ fontSize: 16 }}>This is you in the game. Make it look like you — it evolves as you rank up.</p>
           </div>
-          <SystemWindow title="CHARACTER CREATION" tone="crimson" icon={null}>
+          <SystemWindow title="CHARACTER CREATION" tone="violet" icon={null}>
             <AvatarBuilder look={look} onChange={setLook} level={player.level} premium={(player.items.outfit || 0) > 0} />
           </SystemWindow>
           <div className="row between">

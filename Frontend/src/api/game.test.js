@@ -16,6 +16,7 @@ const qs = todaysQuests(p);
 assert.equal(qs.length, 5);
 const r = completeQuest(p, qs[0].id);
 assert.deepEqual([r.coins, r.qty, r.barFrom, r.barTo], [10, 1, 0, 1]);
+assert.deepEqual([r.levelFrom, r.levelTo], [1, 1], 'no level up from one quest');
 assert.equal(stats(p).find((x) => x.name === r.stat).value, 12, 'quest trains its stat');
 assert.equal(completeQuest(p, qs[0].id), null, 'cannot claim twice');
 qs.slice(1, 4).forEach((q) => completeQuest(p, q.id));

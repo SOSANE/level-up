@@ -52,7 +52,7 @@ export function completeQuest(p, id) {
   const quests = todaysQuests(p);
   const q = quests.find((x) => x.id === id);
   if (!q || p.day.status[id] === 'done') return null;
-  const r = { category: q.name, xp: q.reward.xp, coins: q.reward.coins, material: q.reward.material, qty: q.reward.qty, barFrom: p.bars[id] || 0 };
+  const r = { category: q.name, title: q.title, xp: q.reward.xp, coins: q.reward.coins, material: q.reward.material, qty: q.reward.qty, barFrom: p.bars[id] || 0, levelFrom: p.level };
   p.day.status[id] = 'done';
   p.bars[id] = Math.min(10, r.barFrom + 1);
   r.barTo = p.bars[id];
@@ -70,6 +70,7 @@ export function completeQuest(p, id) {
     r.cleared = true;
   }
   p.history[today()] = p.day.cleared ? 'd' : 'p';
+  r.levelTo = p.level;
   return r;
 }
 
