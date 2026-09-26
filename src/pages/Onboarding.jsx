@@ -1,0 +1,99 @@
+// Pick at least 10 categories, then a starter character.
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { usePlayer } from '../api/player.jsx';
+import { CATEGORIES, CHARACTERS, MIN_CATEGORIES, PROOF_LABEL } from '../api/data.js';
+import { today } from '../api/game.js';
+import { Avatar, Bar } from '../components/ui.jsx';
+
+export default function Onboarding() {
+  const { player, update } = usePlayer();
+  const navigate = useNavigate();
+  const [step, setStep] = useState('categories');
+  const [chosen, setChosen] = useState(player.chosen);
+  const [character, setCharacter] = useState(player.character);
+  const n = chosen.length;
+  const ready = n >= MIN_CATEGORIES;
+
+  const toggle = (id) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
+
+  function finish() {
+    update((p) => {
+      p.chosen = chosen;
+      p.character = character;
+      if (!p.onboarded) { p.onboarded = true; p.started = today(); p.lastCheck = today(); }
+    });
+    navigate('/dashboard');
+  }
+
+  return (
+    <div className="page col" style={{ gap: 28 }}>
+      <header className="row between wrap">
+        <Link to="/" className="brand">SECOND AWAKENING</Link>
+        <span className="mono muted">STEP {step === 'categories' ? 1 : 2} OF 2</span>
+      </header>
+
+      {step === 'categories' ? (
+        <>
+          <div className="row between wrap" style={{ alignItems: 'flex-end', gap: '24px 40px' }}>
+            <div className="col" style={{ gap: 8 }}>
+              <h1 className="display" style={{ fontSize: 38 }}>Choose at least 10 categories</h1>
+              <p className="soft" style={{ fontSize: 16 }}>Each category gets its own progress bar. Your daily quests rotate through them.</p>
+            </div>
+            <div className="col" style={{ width: 280, gap: 8 }}>
+              <div className="row between" style={{ fontSize: 15 }}>
+                <b>{n} chosen</b>
+                <span role="status" style={{ color: ready ? 'var(--blue)' : 'var(--muted)' }}>{ready ? 'Ready' : `${MIN_CATEGORIES - n} to go`}</span>
+              </div>
+              <Bar pct={(n / MIN_CATEGORIES) * 100} h={8} label="Categories chosen" />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 10 }}>
+            {CATEGORIES.map((c) => {
+              const on = chosen.includes(c.id);
+              return (
+                <button key={c.id} className="tile" aria-pressed={on} onClick={() => toggle(c.id)}>
+                  <span className="row between" style={{ width: '100%', alignItems: 'flex-start', gap: 8 }}>
+                    <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{c.name}</span>
+                    <span className="checkbox" aria-hidden="true">{on ? '✓' : ''}</span>
+                  </span>
+                  <span className="mono muted" style={{ fontSize: 11, letterSpacing: '.08em' }}>{PROOF_LABEL[c.proof].toUpperCase()} PROOF</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="row between wrap" style={{ gap: 16 }}>
+            <p className="muted" style={{ fontSize: 14, flex: '1 1 400px' }}>Proof types: Photo is checked by Gemini · Vitals use the camera heart-rate reading · Focus watches you stay on task · Honor is your word.</p>
+            <button className="btn btn-blue" disabled={!ready} onClick={() => setStep('character')}>Continue</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="col" style={{ gap: 8 }}>
+            <h1 className="display" style={{ fontSize: 38 }}>Choose your starter character</h1>
+            <p className="soft" style={{ fontSize: 16 }}>More characters unlock as you level up.</p>
+          </div>
+          <div role="radiogroup" aria-label="Starter character" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+            {CHARACTERS.map((c) => {
+              const on = character === c.id;
+              return (
+                <button key={c.id} role="radio" aria-checked={on} onClick={() => setCharacter(c.id)} className="card col"
+                  style={{ gap: 16, padding: 24, textAlign: 'left', borderColor: on ? c.color : undefined, background: on ? '#141A26' : undefined }}>
+                  <div style={{ height: 140, borderRadius: 12, background: 'var(--deep)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Avatar color={c.color} size={90} />
+                  </div>
+                  <span className="display" style={{ fontSize: 22, color: on ? c.color : undefined }}>{c.name}</span>
+                  <span className="soft" style={{ fontSize: 15, lineHeight: 1.5 }}>{c.intro}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="row between">
+            <button className="btn btn-ghost" onClick={() => setStep('categories')}>Back</button>
+            <button className="btn btn-gold" disabled={!character} onClick={finish}>Begin my awakening</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
