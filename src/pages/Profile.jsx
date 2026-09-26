@@ -1,12 +1,8 @@
-import { useState } from 'react';
 import { usePlayer } from '../api/player.jsx';
 import { CHARACTER, CHARACTERS, MATERIAL } from '../api/data.js';
-import { RANK_COLOR, rankOf, streak, today, totalXp } from '../api/game.js';
+import { streak, today } from '../api/game.js';
 import { Avatar, Bar, MaterialIcon, RankBadge } from '../components/ui.jsx';
 
-// ponytail: sample players until there's a backend leaderboard.
-const GLOBAL = [['nightrunner', 52, 311], ['mika.lifts', 41, 204], ['quietpages', 37, 188], ['sol_walks', 29, 140], ['river.k', 24, 96], ['tamsin_cooks', 21, 88], ['obi.studies', 16, 61], ['lowkey.lin', 12, 40], ['dawnpatrol', 7, 22]];
-const FRIENDS = [['river.k', 24, 96], ['obi.studies', 16, 61], ['lowkey.lin', 12, 40], ['dawnpatrol', 7, 22], ['ana.moves', 5, 13], ['theo_reads', 1, 2]];
 const UNLOCKS = [['The Ironbound', 3], ['The Wayfarer', 4], ['The Vanguard', 5], ['The Ascendant', 10]];
 const SHOP = [
   { id: 'freeze', name: 'Streak freeze', desc: 'Save one missed day', cost: 100 },
@@ -22,12 +18,7 @@ const DAY_LOOK = {
 
 export default function Profile() {
   const { player, update, reset } = usePlayer();
-  const [scope, setScope] = useState('friends');
   const ch = CHARACTER[player.character] || CHARACTER.rookie;
-
-  const me = { name: player.name, level: player.level, streak: streak(player), exp: totalXp(player), me: true };
-  const others = (scope === 'friends' ? FRIENDS : GLOBAL).map(([name, level, s]) => ({ name, level, streak: s, exp: (level - 1) * 1000 + (s * 37) % 1000 }));
-  const rows = [...others, me].sort((a, b) => b.exp - a.exp);
 
   const now = new Date();
   const month = now.toLocaleDateString('en-US', { month: 'long' });
@@ -67,7 +58,7 @@ export default function Profile() {
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-            <div className="stat"><span className="display" style={{ fontSize: 26 }}>{me.streak}</span><span className="muted">Day streak</span></div>
+            <div className="stat"><span className="display" style={{ fontSize: 26 }}>{streak(player)}</span><span className="muted">Day streak</span></div>
             <div className="stat"><span className="display" style={{ fontSize: 26 }}>{player.questsDone}</span><span className="muted">Quests done</span></div>
             <div className="stat"><span className="display gold" style={{ fontSize: 26 }}>{player.coins}</span><span className="muted">Coins</span></div>
           </div>
@@ -119,42 +110,8 @@ export default function Profile() {
         </section>
       </div>
 
-      <section className="card col" style={{ flex: '1 1 520px', gap: 18, padding: 24 }}>
-        <div className="row between wrap">
-          <div className="col" style={{ gap: 4 }}>
-            <span className="mono" style={{ color: 'var(--blue)' }}>HUNTER RANKING</span>
-            <h1 className="display" style={{ fontSize: 32 }}>Leaderboard</h1>
-          </div>
-          <div role="tablist" aria-label="Leaderboard scope" className="tabs">
-            {['friends', 'global'].map((s) => (
-              <button key={s} role="tab" aria-selected={scope === s} onClick={() => setScope(s)}>{s === 'friends' ? 'Friends' : 'Global'}</button>
-            ))}
-          </div>
-        </div>
-        <div className="lb-row mono dim" style={{ height: 'auto', background: 'none', fontSize: 11 }}>
-          <span>#</span><span>PLAYER</span><span>RANK</span><span>LEVEL</span><span style={{ textAlign: 'right' }}>TOTAL EXP</span><span style={{ textAlign: 'right' }}>STREAK</span>
-        </div>
-        <div className="col" style={{ gap: 6 }}>
-          {rows.map((r, k) => {
-            const rank = rankOf(r.level);
-            return (
-              <div key={r.name + k} className="lb-row" style={r.me ? { background: '#122036', borderColor: '#5AA9FF' } : undefined}>
-                <span className="display" style={{ fontSize: 18, color: k === 0 ? '#F2B84B' : '#9AA6BA' }}>{k + 1}</span>
-                <span className="row" style={{ gap: 12, fontSize: 16, fontWeight: 500, minWidth: 0 }}>
-                  <span className="initials" style={{ width: 32, height: 32, fontSize: 12 }}>{r.name.slice(0, 2).toUpperCase()}</span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}{r.me ? ' (you)' : ''}</span>
-                </span>
-                <span style={{ fontFamily: 'Oxanium, sans-serif', fontWeight: 800, fontSize: 18, color: RANK_COLOR[rank] }}>{rank}</span>
-                <span>{r.level}</span>
-                <span style={{ textAlign: 'right' }}>{r.exp.toLocaleString('en-US')}</span>
-                <span className="soft" style={{ textAlign: 'right' }}>{r.streak} d</span>
-              </div>
-            );
-          })}
-        </div>
-        <span className="dim" style={{ fontSize: 13 }}>Ranked by total EXP. Sample players shown for the demo.</span>
-
-        <div className="col" style={{ marginTop: 'auto', paddingTop: 18, borderTop: '1px solid var(--line)', gap: 12 }}>
+      <section className="card col" style={{ flex: '1 1 520px', gap: 18, padding: 24 }} aria-label="Shop">
+        <div className="col" style={{ gap: 12 }}>
           <div className="row between" style={{ alignItems: 'baseline' }}>
             <h2 className="display" style={{ fontSize: 18 }}>Spend your coins</h2>
             <span className="gold" style={{ fontSize: 13 }}>Balance: {player.coins}</span>
