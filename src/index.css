@@ -131,9 +131,7 @@ h1, h2, p { margin: 0; }
 /* ---------- System windows (glowing frames, inspired by the Solo Leveling "System" UI) ---------- */
 body {
   background:
-    radial-gradient(1000px 560px at 5% -10%, rgba(90, 169, 255, .14), transparent 60%),
-    radial-gradient(900px 520px at 100% 0%, rgba(165, 139, 255, .13), transparent 60%),
-    radial-gradient(800px 500px at 50% 120%, rgba(242, 184, 75, .06), transparent 60%),
+    radial-gradient(1200px 520px at 50% -12%, rgba(90, 169, 255, .10), transparent 65%),
     var(--bg);
   background-attachment: fixed;
 }

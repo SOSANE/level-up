@@ -2,6 +2,7 @@ import { usePlayer } from '../api/player.jsx';
 import { CHARACTERS, MATERIAL } from '../api/data.js';
 import { today } from '../api/game.js';
 import CharacterCard from '../components/CharacterCard.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
 import { Avatar, MaterialIcon, Potion } from '../components/ui.jsx';
 
@@ -41,11 +42,8 @@ export default function Profile() {
 
   return (
     <div className="page col" style={{ gap: 28 }}>
-      <header className="page-head">
-        <span className="eyebrow" style={{ color: 'var(--violet-soft)' }}>PLAYER PROFILE</span>
-        <h1 className="page-title">{player.name}</h1>
-        <p className="page-sub">Your character, what you’ve collected, and where to spend your coins.</p>
-      </header>
+      <PageHeader eyebrow="PLAYER PROFILE" color="var(--violet-soft)" title={player.name}
+        sub="Your character, what you’ve collected, and where to spend your coins." />
     <div className="row wrap" style={{ gap: 28, alignItems: 'flex-start' }}>
       <div className="col" style={{ flex: '1 1 400px', maxWidth: 460, gap: 20 }}>
         <CharacterCard player={player} />

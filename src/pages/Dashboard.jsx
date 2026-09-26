@@ -5,6 +5,7 @@ import { REWARD, addQuest, canAddQuest, sendToRift, today, todaysQuests } from '
 import Hud from '../components/Hud.jsx';
 import QuestCard from '../components/QuestCard.jsx';
 import RewardPopup from '../components/RewardPopup.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
 
 export default function Dashboard() {
@@ -27,11 +28,8 @@ export default function Dashboard() {
 
   return (
     <div className="page col" style={{ gap: 24 }}>
-      <header className="page-head">
-        <span className="eyebrow">{weekday} · DAY {dayN} OF YOUR AWAKENING</span>
-        <h1 className="page-title">Today’s quests</h1>
-        <p className="page-sub">Clear the 4 required quests to seal the Rift. Everything else is extra EXP.</p>
-      </header>
+      <PageHeader eyebrow={`${weekday} · DAY ${dayN} OF YOUR AWAKENING`} title="Today’s quests"
+        sub="Clear the 4 required quests to seal the Rift. Everything else is extra EXP." />
 
       {player.rift && (
         <Link to="/rift" className="card row between wrap" style={{ borderColor: 'var(--red-line)', background: 'var(--red-tint)', color: 'var(--red)', textDecoration: 'none' }}>
