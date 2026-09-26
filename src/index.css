@@ -1,20 +1,22 @@
 :root {
-  /* Surfaces: navy slate, lifted so panels separate clearly from the page */
-  --bg: #121828; --deep: #171E30; --panel: #1C2438; --raised: #242E46;
-  --line: #2C3752; --line2: #3A4766; --line3: #4B5878;
-  /* Text */
-  --fg: #EEF2FA; --soft: #C6CEDD; --muted: #A5AFC3; --dim: #8D98AE; --on-accent: #0B1322;
-  /* Accents: blue = primary action, violet = character/progress, gold = rewards, red = danger.
-     Verification types each own a color (see PROOF_COLOR in api/data.js). */
-  --blue: #5AA9FF; --blue-soft: #9CCBFF; --blue-deep: #2F5A8C;
-  --violet: #A58BFF; --violet-soft: #C6B6FF;
+  /* Palette: a mix of two schemes —
+     (1) crimson #7D0018 · maroon #340A13 · slate #25435D · steel #4C6C81 · mist #87A4B5 · ice #B9D3E2
+     (2) rich black #030812 · navy #020764 · dark cerulean #043780 · sapphire #025EC4 · cyan #0ECCED
+     Surfaces are navy lifted a few steps so panels stay readable; slate→ice is the neutral scale. */
+  --bg: #0A1424; --deep: #0E1A30; --panel: #122240; --raised: #1A2E52;
+  --line: #25435D; --line2: #4C6C81; --line3: #5F7F94;
+  /* Text (ice → mist) */
+  --fg: #EDF4F9; --soft: #B9D3E2; --muted: #87A4B5; --dim: #819CAF; --on-accent: #030812;
+  /* Accents: cyan = highlight/progress, sapphire = primary buttons, crimson = second accent + danger, gold = coins only */
+  --blue: #0ECCED; --blue-soft: #B9D3E2; --blue-deep: #043780; --sapphire: #025EC4; --sapphire-light: #4D8FE8;
+  --crimson: #E0304F; --crimson-soft: #FF8FA0; --crimson-deep: #7D0018; --maroon: #340A13;
   --gold: #F2B84B; --gold-soft: #F6D38E;
-  --green: #5AD19A; --coral: #FF8A6B; --red: #FF7A7A;
-  --blue-tint: color-mix(in srgb, var(--blue) 16%, var(--panel));
-  --violet-tint: color-mix(in srgb, var(--violet) 16%, var(--panel));
+  --red: #FF5C74;
+  --blue-tint: color-mix(in srgb, var(--sapphire) 26%, var(--panel));
+  --crimson-tint: color-mix(in srgb, var(--crimson-deep) 45%, var(--panel));
   --gold-tint: color-mix(in srgb, var(--gold) 14%, var(--panel));
-  --red-tint: color-mix(in srgb, var(--red) 12%, var(--panel));
-  --red-line: color-mix(in srgb, var(--red) 40%, var(--panel));
+  --red-tint: color-mix(in srgb, var(--maroon) 70%, var(--panel));
+  --red-line: color-mix(in srgb, var(--crimson-deep) 80%, var(--panel));
   /* Shape: small = chips/tags, medium = controls, large = panels */
   --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
 }
@@ -40,7 +42,7 @@ h1, h2, p { margin: 0; }
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
 .btn:not(:disabled):hover { filter: brightness(1.08); }
 .btn-light { background: var(--fg); color: var(--bg); }
-.btn-blue { background: var(--blue); color: var(--on-accent); }
+.btn-blue { background: var(--sapphire); color: #fff; }
 .btn-gold { background: var(--gold); color: var(--on-accent); }
 .btn-ghost { background: transparent; border: 1px solid var(--line2); color: var(--fg); font-weight: 400; }
 .btn-outline-gold { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
@@ -106,7 +108,7 @@ h1, h2, p { margin: 0; }
 .g-mark { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #1F1F1F; display: flex; align-items: center; justify-content: center; font-family: Oxanium, sans-serif; font-weight: 800; font-size: 14px; }
 .input { height: 52px; padding: 0 16px; border-radius: var(--r-md); border: 1px solid var(--line2); background: var(--raised); color: var(--fg); font: inherit; font-size: 17px; }
 .choice { min-height: 64px; padding: 14px 18px; border-radius: var(--r-md); border: 1px solid var(--line2); background: var(--raised); font-size: 17px; text-align: left; }
-.choice[aria-pressed="true"] { border-color: var(--violet); background: var(--violet-tint); }
+.choice[aria-pressed="true"] { border-color: var(--crimson); background: var(--crimson-tint); }
 .tile { height: 92px; padding: 12px 14px; border-radius: var(--r-md); border: 1px solid var(--line2); background: var(--panel); text-align: left;
   display: flex; flex-direction: column; justify-content: space-between; }
 .tile[aria-pressed="true"] { border-color: var(--blue); background: var(--blue-tint); }
@@ -131,17 +133,17 @@ h1, h2, p { margin: 0; }
 /* ---------- System windows (glowing frames, inspired by the Solo Leveling "System" UI) ---------- */
 body {
   background:
-    radial-gradient(1200px 520px at 50% -12%, rgba(90, 169, 255, .10), transparent 65%),
+    radial-gradient(1200px 520px at 50% -12%, rgba(2, 94, 196, .22), transparent 65%),
     var(--bg);
   background-attachment: fixed;
 }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.sys-window.tone-blue { --rgb: 90, 169, 255; }
-.sys-window.tone-purple { --rgb: 165, 139, 255; }
-.sys-window.tone-red { --rgb: 255, 122, 122; }
+.sys-window.tone-blue { --rgb: 40, 130, 235; }
+.sys-window.tone-crimson { --rgb: 224, 48, 79; }
+.sys-window.tone-red { --rgb: 224, 48, 79; }
 .sys-window.tone-gold { --rgb: 242, 184, 75; }
 .sys-window {
-  --rgb: 90, 169, 255;
+  --rgb: 40, 130, 235;
   position: relative; padding: 30px 24px 24px; border: 1px solid rgba(var(--rgb), .45); border-radius: var(--r-lg);
   background: radial-gradient(120% 45% at 50% 0%, rgba(var(--rgb), .14), transparent 70%), var(--panel);
   box-shadow: 0 0 24px rgba(var(--rgb), .14), inset 0 0 28px rgba(var(--rgb), .06);
@@ -162,22 +164,22 @@ body {
 .sw-title { flex: 1; margin: 0; min-height: 46px; display: flex; align-items: center; justify-content: center; padding: 6px 12px;
   border: 1px solid rgba(var(--rgb), .45); border-radius: var(--r-md); background: rgba(var(--rgb), .06); font-family: Cinzel, serif; font-weight: 700; font-size: 18px; letter-spacing: .14em; text-align: center;
   color: var(--fg); text-shadow: 0 0 8px rgba(var(--rgb), 1), 0 0 20px rgba(var(--rgb), .6); }
-.sys-note { margin: 0 0 14px; text-align: center; font-size: 14px; line-height: 1.5; color: var(--soft); text-shadow: 0 0 10px rgba(var(--rgb, 90, 169, 255), .55); }
+.sys-note { margin: 0 0 14px; text-align: center; font-size: 14px; line-height: 1.5; color: var(--soft); text-shadow: 0 0 10px rgba(var(--rgb, 14, 204, 237), .55); }
 .goal-heading { margin: 4px 0 18px; text-align: center; font-family: Cinzel, serif; font-size: 22px; letter-spacing: .14em; color: var(--fg);
   text-decoration: underline double rgba(var(--rgb), .9); text-underline-offset: 8px; text-shadow: 0 0 10px rgba(var(--rgb), .9); }
-.bracket { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--blue-soft); text-shadow: 0 0 8px rgba(90, 169, 255, .6); }
+.bracket { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--blue-soft); text-shadow: 0 0 8px rgba(14, 204, 237, .6); }
 .goal-list { gap: 0; border-top: 1px solid rgba(var(--rgb), .18); }
 .goal-row { display: flex; flex-direction: column; gap: 12px; padding: 16px 4px; border-bottom: 1px solid rgba(var(--rgb), .18); }
 .goal-row.active { background: linear-gradient(90deg, rgba(var(--rgb), .1), transparent); padding-left: 12px; }
 .goal-row.done .goal-title { color: var(--muted); }
 .goal-title { margin: 0; font-size: 17px; font-weight: 600; }
 .goal-check { width: 20px; height: 20px; border: 1.5px solid var(--blue-soft); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center;
-  font-size: 13px; color: var(--on-accent); box-shadow: 0 0 8px rgba(90, 169, 255, .5); }
+  font-size: 13px; color: var(--on-accent); box-shadow: 0 0 8px rgba(14, 204, 237, .5); }
 .goal-check.on { background: var(--blue); border-color: var(--blue); }
 .add-quest { gap: 16px; margin-top: 18px; padding: 16px; border: 1px dashed rgba(var(--rgb), .45); }
 .warning-block { margin-top: 24px; gap: 8px; text-align: center; align-items: center; }
 .warning-block p { margin: 0; max-width: 440px; line-height: 1.6; color: var(--soft); }
-.warning-block b { color: var(--blue-soft); text-shadow: 0 0 10px rgba(90, 169, 255, .9); }
+.warning-block b { color: var(--blue-soft); text-shadow: 0 0 10px rgba(14, 204, 237, .9); }
 .tone-red .sys-note, .tone-red .warning-block b { color: var(--fg); }
 
 /* character card */
@@ -192,7 +194,7 @@ body {
 .stat-list { margin: 0; border: 1px solid rgba(var(--rgb), .3); padding: 4px 14px; }
 .stat-list div { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(var(--rgb), .15); }
 .stat-list div:last-child { border-bottom: 0; }
-.stat-list dt { font-family: Cinzel, serif; font-size: 14px; letter-spacing: .08em; color: var(--violet-soft); }
+.stat-list dt { font-family: Cinzel, serif; font-size: 14px; letter-spacing: .08em; color: var(--soft); }
 .stat-list dd { margin: 0; font-family: Cinzel, serif; font-weight: 700; color: var(--fg); }
 .orb-box { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid rgba(var(--rgb), .3); font-size: 12px; }
 .orb { width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -206,7 +208,7 @@ body {
 .potion-item svg { filter: drop-shadow(0 0 10px var(--c)); margin-bottom: 6px; transition: transform .2s; }
 .potion-item:not(:disabled):hover svg { transform: translateY(-3px) rotate(-4deg); }
 
-.sys { box-shadow: 0 0 16px rgba(90, 169, 255, .12), inset 0 0 18px rgba(90, 169, 255, .06); }
+.sys { box-shadow: 0 0 16px rgba(14, 204, 237, .12), inset 0 0 18px rgba(14, 204, 237, .06); }
 
 /* ---------- Unified type + accents ---------- */
 .page-head { display: flex; flex-direction: column; gap: 6px; }
@@ -215,17 +217,17 @@ body {
 .page-sub { margin: 0; color: var(--soft); font-size: 16px; }
 
 /* nav: brand gradient, active tab underline */
-.brand { background: linear-gradient(90deg, var(--blue-soft), var(--violet-soft)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.brand { background: linear-gradient(90deg, var(--blue-soft), var(--blue)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .navlink { position: relative; }
 .navlink.active { background: var(--raised); }
 .navlink.active::after { content: ''; position: absolute; left: 18px; right: 18px; bottom: 5px; height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, var(--blue), var(--violet)); box-shadow: 0 0 8px var(--blue); }
+  background: linear-gradient(90deg, var(--blue), var(--crimson)); box-shadow: 0 0 8px var(--blue); }
 #nav { background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 5; }
 .pill.coins { border-color: color-mix(in srgb, var(--gold) 40%, var(--line2)); background: var(--gold-tint); }
 
 /* buttons: primary gets a soft glow, same radius everywhere */
 .btn, .btn-danger, .pad-btn, .input, .choice, .tile, .shop-item, .potion-item { border-radius: var(--r-md); }
-.btn-blue { box-shadow: 0 4px 18px rgba(90, 169, 255, .28); }
+.btn-blue { box-shadow: 0 4px 18px rgba(2, 94, 196, .45); }
 .btn-gold { box-shadow: 0 4px 18px rgba(242, 184, 75, .25); }
 
 /* accent chips per verification type */

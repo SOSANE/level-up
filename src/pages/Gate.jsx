@@ -9,11 +9,11 @@ import SystemWindow from '../components/SystemWindow.jsx';
 import { Bar, CoinIcon } from '../components/ui.jsx';
 
 const GATES = [
-  { name: 'Hollow Quarry', rank: 'C', lv: 10, color: '#5AA9FF', boss: 'Quarry Warden', bossHp: 700, xp: 120, coins: 80, drop: 'Stone shard', runner: 'river.k', runnerRank: 'B', runnerLv: 24, streak: 96, watchers: 38 },
-  { name: 'Ember Vault', rank: 'B', lv: 20, color: '#FF8A5A', boss: 'Vault Keeper', bossHp: 1000, xp: 260, coins: 150, drop: 'Ember cloak', runner: 'mika.lifts', runnerRank: 'A', runnerLv: 41, streak: 204, watchers: 112 },
-  { name: 'Sky Spire', rank: 'A', lv: 35, color: '#9B7BFF', boss: 'Spire Sentinel', bossHp: 1300, xp: 500, coins: 300, drop: 'New character', runner: 'nightrunner', runnerRank: 'S', runnerLv: 52, streak: 311, watchers: 457 }
+  { name: 'Hollow Quarry', rank: 'C', lv: 10, color: '#4D8FE8', boss: 'Quarry Warden', bossHp: 700, xp: 120, coins: 80, drop: 'Stone shard', runner: 'river.k', runnerRank: 'B', runnerLv: 24, streak: 96, watchers: 38 },
+  { name: 'Ember Vault', rank: 'B', lv: 20, color: '#FF5C74', boss: 'Vault Keeper', bossHp: 1000, xp: 260, coins: 150, drop: 'Ember cloak', runner: 'mika.lifts', runnerRank: 'A', runnerLv: 41, streak: 204, watchers: 112 },
+  { name: 'Sky Spire', rank: 'A', lv: 35, color: '#0ECCED', boss: 'Spire Sentinel', bossHp: 1300, xp: 500, coins: 300, drop: 'New character', runner: 'nightrunner', runnerRank: 'S', runnerLv: 52, streak: 311, watchers: 457 }
 ];
-const PLAY_BOSS = { name: 'Quarry Warden', hp: 400, color: '#9B7BFF' };
+const PLAY_BOSS = { name: 'Quarry Warden', hp: 400, color: '#E0304F' };
 const REWARD = { xp: 40, coins: 30 };
 
 function Log({ title, lines }) {

@@ -4,7 +4,7 @@ import { PROOF_COLOR, PROOF_LABEL } from '../api/data.js';
 import { STAT_OF } from '../api/game.js';
 import { CoinIcon, MaterialIcon, ProofChip } from './ui.jsx';
 
-const TAG = { required: ['REQUIRED', 'var(--raised)', 'var(--blue-soft)'], bonus: ['BONUS', 'var(--gold-tint)', 'var(--gold)'], extra: ['EXTRA', 'var(--violet-tint)', 'var(--violet-soft)'] };
+const TAG = { required: ['REQUIRED', 'var(--raised)', 'var(--blue-soft)'], bonus: ['BONUS', 'var(--gold-tint)', 'var(--gold)'], extra: ['EXTRA', 'var(--crimson-tint)', 'var(--crimson-soft)'] };
 
 export default function QuestCard({ quest, status }) {
   const [tag, tagBg, tagFg] = TAG[quest.kind];

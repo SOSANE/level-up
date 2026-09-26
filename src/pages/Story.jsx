@@ -5,7 +5,7 @@ const SCENES = [
   { title: 'You were good. Really good.', body: 'Up before the sun. Top of every list. You had a plan, and you kept it.', system: '[STATUS] Discipline: high · Energy: high · Streak: unbroken', color: 'var(--blue)' },
   { title: 'Then you got comfortable.', body: 'The alarm became a suggestion. The gym bag became furniture. “Tomorrow” became your favorite word.', system: '[WARNING] Discipline falling. Quests ignored: too many to count.', color: 'var(--muted)' },
   { title: 'Everyone has a villain arc.', body: 'Yours didn’t wear a mask. It wore sweatpants, held a phone, and whispered “one more episode” at 3 a.m.', system: '[ALERT] Villain arc detected. Main character status: suspended.', color: 'var(--red)' },
-  { title: 'I’ve seen this before.', body: 'Every hunter worth remembering started at Rank E. Weak. Ignored. Hungry. That isn’t the end of your story. It’s the setup.', system: '[NOTICE] Dormant potential found. It has been waiting for you.', color: 'var(--violet)' },
+  { title: 'I’ve seen this before.', body: 'Every hunter worth remembering started at Rank E. Weak. Ignored. Hungry. That isn’t the end of your story. It’s the setup.', system: '[NOTICE] Dormant potential found. It has been waiting for you.', color: 'var(--sapphire-light)' },
   { title: 'Welcome to your Second Awakening.', body: 'The System has chosen you. Your first quests start today. Don’t make me regret it.', system: '[SYSTEM] You have been selected as a Player. Accept?', color: 'var(--gold)' }
 ];
 const HS = [10, 22, 16, 30, 12, 26, 34, 18, 24, 14, 32, 20, 28, 12, 22, 36, 16, 26, 10, 30, 18, 24, 14, 20];

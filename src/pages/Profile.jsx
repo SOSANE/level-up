@@ -9,8 +9,8 @@ import { Avatar, MaterialIcon, Potion } from '../components/ui.jsx';
 const UNLOCKS = [['The Ironbound', 3], ['The Wayfarer', 4], ['The Vanguard', 5], ['The Ascendant', 10]];
 const SHOP = [
   { id: 'freeze', name: 'Frost elixir', desc: 'Freezes your streak for one missed day', cost: 100, color: 'var(--blue)' },
-  { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150, color: 'var(--violet)' },
-  { id: 'outfit', name: 'Essence of style', desc: 'A new outfit for your character', cost: 400, color: 'var(--green)' }
+  { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150, color: 'var(--crimson)' },
+  { id: 'outfit', name: 'Essence of style', desc: 'A new outfit for your character', cost: 400, color: 'var(--sapphire-light)' }
 ];
 const DAY_LOOK = {
   d: { bg: 'var(--blue)', ring: 'var(--blue)', fg: 'var(--on-accent)', label: 'All quests done' },
@@ -42,7 +42,7 @@ export default function Profile() {
 
   return (
     <div className="page col" style={{ gap: 28 }}>
-      <PageHeader eyebrow="PLAYER PROFILE" color="var(--violet-soft)" title={player.name}
+      <PageHeader eyebrow="PLAYER PROFILE" color="var(--crimson-soft)" title={player.name}
         sub="Your character, what you’ve collected, and where to spend your coins." />
     <div className="row wrap" style={{ gap: 28, alignItems: 'flex-start' }}>
       <div className="col" style={{ flex: '1 1 400px', maxWidth: 460, gap: 20 }}>
@@ -61,7 +61,7 @@ export default function Profile() {
           </div>
         </SystemWindow>
 
-        <SystemWindow title="CHARACTERS" icon={null} tone="purple">
+        <SystemWindow title="CHARACTERS" icon={null} tone="crimson">
           <p className="sys-note">[{characters.filter((c) => c.open).length} of {characters.length} unlocked]</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 10 }}>
             {characters.map((c) => (
@@ -91,7 +91,7 @@ export default function Profile() {
           </div>
         </SystemWindow>
 
-        <SystemWindow title="POTION MARKETPLACE" icon={null} tone="purple">
+        <SystemWindow title="POTION MARKETPLACE" icon={null} tone="crimson">
           <div className="col" style={{ gap: 14 }}>
             <p className="sys-note">[Balance: <span className="gold">{player.coins} coins</span>]</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>

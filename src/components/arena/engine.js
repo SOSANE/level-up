@@ -49,13 +49,13 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     b.hp = Math.max(0, b.hp - d);
     b.flash = 0.12;
     s.shake = Math.max(s.shake, big ? 9 : 4);
-    burst(b.x - b.face * 30, GROUND - rand(80, 170), big ? '#F2B84B' : '#E8ECF4', big ? 18 : 8);
-    floatText(b.x, GROUND - 230, d, big ? '#F2B84B' : '#E8ECF4', big);
-    onLog(`${p.name} · ${label} → ${d}${b.state === 'stunned' ? ' (stunned!)' : ''}`, big ? '#F2B84B' : '#E8ECF4');
+    burst(b.x - b.face * 30, GROUND - rand(80, 170), big ? '#F2B84B' : '#EDF4F9', big ? 18 : 8);
+    floatText(b.x, GROUND - 230, d, big ? '#F2B84B' : '#EDF4F9', big);
+    onLog(`${p.name} · ${label} → ${d}${b.state === 'stunned' ? ' (stunned!)' : ''}`, big ? '#F2B84B' : '#EDF4F9');
     if (!b.enraged && b.hp > 0 && b.hp < b.maxHp * 0.4) {
       b.enraged = true;
       s.shake = 14;
-      onLog(`[SYSTEM] ${b.name} is enraged. Attacks come faster.`, '#FF6B6B');
+      onLog(`[SYSTEM] ${b.name} is enraged. Attacks come faster.`, '#E0304F');
     }
   }
 
@@ -68,9 +68,9 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     p.vx = knock;
     p.vy = -320;
     s.shake = Math.max(s.shake, 10);
-    burst(p.x, p.y - 60, '#FF6B6B', 12);
-    floatText(p.x, p.y - 120, d, '#FF8A8A');
-    onLog(`${b.name} · ${source} → ${d}`, '#FF8A8A');
+    burst(p.x, p.y - 60, '#E0304F', 12);
+    floatText(p.x, p.y - 120, d, '#FF5C74');
+    onLog(`${b.name} · ${source} → ${d}`, '#FF5C74');
   }
 
   function throwRock() {
@@ -98,7 +98,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
         p.vx = dir * RUN;
         if (dir) p.face = dir;
         p.state = !onGround ? 'jump' : dir ? 'run' : 'idle';
-        if (input.jump && onGround) { p.vy = -JUMP; burst(p.x, GROUND, '#3A4458', 6, 120); }
+        if (input.jump && onGround) { p.vy = -JUMP; burst(p.x, GROUND, '#4C6C81', 6, 120); }
         if (input.dodge && p.dodgeCd <= 0) {
           setP('dodge'); p.vx = p.face * 560; p.inv = 0.38; p.dodgeCd = 0.75;
         } else if (input.skill && p.mp >= 30) {
@@ -165,7 +165,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
         b.hit = true;
         s.shake = 14;
         burst(b.x, GROUND, b.color, 26, 320);
-        onLog(`${b.name} slams the ground.`, '#FF8A8A');
+        onLog(`${b.name} slams the ground.`, '#FF5C74');
         if (dist < 130 && p.y > GROUND - 60) hurtPlayer(roll(12, 18), Math.sign(dx || 1) * 420, 'Slam');
         s.waves.push({ x: b.x - 90, dir: -1, hit: false }, { x: b.x + 90, dir: 1, hit: false });
       }
@@ -173,13 +173,13 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     } else if (b.state === 'charge') {
       if (b.t >= tele('charge')) {
         b.x += b.face * (b.enraged ? 1000 : 850) * dt;
-        if (Math.random() < 0.6) s.parts.push({ x: b.x - b.face * 60, y: GROUND - 4, vx: -b.face * rand(60, 180), vy: rand(-120, -30), life: 0.5, max: 0.5, color: '#3A4458', size: rand(3, 6) });
+        if (Math.random() < 0.6) s.parts.push({ x: b.x - b.face * 60, y: GROUND - 4, vx: -b.face * rand(60, 180), vy: rand(-120, -30), life: 0.5, max: 0.5, color: '#4C6C81', size: rand(3, 6) });
         if (!b.hit && Math.abs(p.x - b.x) < 80 && p.y > GROUND - 115) { b.hit = true; hurtPlayer(roll(14, 20), b.face * 600, 'Charge'); }
         if (b.x <= 90 || b.x >= W - 90) {
           b.x = clamp(b.x, 90, W - 90);
           b.state = 'stunned'; b.t = 0;
           s.shake = 16;
-          burst(b.x + b.face * 70, GROUND - 100, '#9AA6BA', 20);
+          burst(b.x + b.face * 70, GROUND - 100, '#87A4B5', 20);
           onLog(`${b.name} crashes into the wall — stunned! Hit it now.`, '#F2B84B');
         }
       }
@@ -202,7 +202,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     for (const sh of s.shots) {
       sh.x += sh.vx * dt;
       sh.life -= dt;
-      if (Math.random() < 0.8) s.parts.push({ x: sh.x, y: sh.y + rand(-20, 20), vx: -sh.vx * 0.1, vy: rand(-40, 40), life: 0.3, max: 0.3, color: '#5AA9FF', size: rand(2, 4) });
+      if (Math.random() < 0.8) s.parts.push({ x: sh.x, y: sh.y + rand(-20, 20), vx: -sh.vx * 0.1, vy: rand(-40, 40), life: 0.3, max: 0.3, color: '#0ECCED', size: rand(2, 4) });
       if (!sh.hit && Math.abs(sh.x - b.x) < 70 && b.hp > 0) { sh.hit = true; sh.life = 0; hitBoss(roll(26, 34) * p.dmg, true, 'Surge'); }
     }
     s.shots = s.shots.filter((sh) => sh.life > 0 && sh.x > -50 && sh.x < W + 50);
@@ -218,8 +218,8 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
       r.x += r.vx * dt;
       r.y += r.vy * dt;
       r.spin += dt * 8;
-      if (!r.done && Math.abs(r.x - p.x) < 26 && r.y > p.y - 105 && r.y < p.y + 5) { r.done = true; hurtPlayer(roll(7, 11), Math.sign(r.vx) * 250, 'Stone shard'); burst(r.x, r.y, '#9AA6BA', 10); }
-      if (r.y >= GROUND) { r.done = true; burst(r.x, GROUND, '#9AA6BA', 8, 160); }
+      if (!r.done && Math.abs(r.x - p.x) < 26 && r.y > p.y - 105 && r.y < p.y + 5) { r.done = true; hurtPlayer(roll(7, 11), Math.sign(r.vx) * 250, 'Stone shard'); burst(r.x, r.y, '#87A4B5', 10); }
+      if (r.y >= GROUND) { r.done = true; burst(r.x, GROUND, '#87A4B5', 8, 160); }
     }
     s.rocks = s.rocks.filter((r) => !r.done);
   }
@@ -248,7 +248,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
         onLog(`[SYSTEM] ${b.name} defeated.`, '#F2B84B');
       } else if (p.hp <= 0) {
         s.over = 'lost';
-        onLog(`[SYSTEM] ${p.name} has fallen.`, '#FF8A8A');
+        onLog(`[SYSTEM] ${p.name} has fallen.`, '#FF5C74');
       }
     } else if (!s.ended && (s.endT += dt) > 1.6) {
       s.ended = true;
@@ -258,7 +258,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
 
   // ---------- drawing ----------
   function bar(ctx, x, y, w, h, pct, color) {
-    ctx.fillStyle = '#1E2635';
+    ctx.fillStyle = '#25435D';
     ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill();
     ctx.fillStyle = color;
     ctx.beginPath(); ctx.roundRect(x, y, Math.max(0, w * pct), h, h / 2); ctx.fill();
@@ -266,7 +266,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
 
   function drawStage(ctx) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#1A2236'); g.addColorStop(1, '#10162A');
+    g.addColorStop(0, '#132647'); g.addColorStop(1, '#0A1424');
     ctx.fillStyle = g;
     ctx.fillRect(-30, -30, W + 60, H + 60);
     // gate arches behind the fight
@@ -277,8 +277,8 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     }
     // pillars
     for (const x of [60, W - 100]) {
-      ctx.fillStyle = '#1E2740'; ctx.fillRect(x, 140, 40, GROUND - 140);
-      ctx.fillStyle = '#28324C'; ctx.fillRect(x - 8, 128, 56, 14);
+      ctx.fillStyle = '#1A2E52'; ctx.fillRect(x, 140, 40, GROUND - 140);
+      ctx.fillStyle = '#25435D'; ctx.fillRect(x - 8, 128, 56, 14);
       ctx.fillStyle = rgba(b.color, 0.5 + 0.3 * Math.sin(s.time * 3 + x)); ctx.fillRect(x + 16, 170, 8, 8);
     }
     // drifting motes
@@ -289,7 +289,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
       ctx.fillRect(x, y, 2, 2);
     }
     // floor with perspective grid
-    ctx.fillStyle = '#151C2E'; ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.fillStyle = '#0E1A30'; ctx.fillRect(0, GROUND, W, H - GROUND);
     ctx.strokeStyle = rgba(b.color, 0.12); ctx.lineWidth = 1;
     for (let x = -W; x <= W * 2; x += 60) { ctx.beginPath(); ctx.moveTo(x, GROUND); ctx.lineTo(W / 2 + (x - W / 2) * 2.2, H); ctx.stroke(); }
     for (const y of [GROUND + 22, GROUND + 50]) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
@@ -301,19 +301,19 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     const pulse = 0.5 + 0.5 * Math.sin(s.time * 20);
     if (b.state === 'slam' && !b.hit) {
       const k = b.t / tele('slam');
-      ctx.fillStyle = `rgba(255,107,107,${0.12 + 0.25 * k})`;
+      ctx.fillStyle = `rgba(224,48,79,${0.12 + 0.25 * k})`;
       ctx.beginPath(); ctx.ellipse(b.x, GROUND + 8, 130, 14, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = `rgba(255,107,107,${0.4 + 0.4 * pulse})`; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = `rgba(224,48,79,${0.4 + 0.4 * pulse})`; ctx.lineWidth = 2; ctx.stroke();
     }
     if (b.state === 'charge' && b.t < tele('charge')) {
       const end = b.face > 0 ? W - 60 : 60;
       const gr = ctx.createLinearGradient(b.x, 0, end, 0);
-      gr.addColorStop(0, `rgba(255,107,107,${0.35 * pulse + 0.1})`); gr.addColorStop(1, 'rgba(255,107,107,0)');
+      gr.addColorStop(0, `rgba(224,48,79,${0.35 * pulse + 0.1})`); gr.addColorStop(1, 'rgba(224,48,79,0)');
       ctx.fillStyle = gr;
       ctx.fillRect(Math.min(b.x, end), GROUND - 110, Math.abs(end - b.x), 110);
     }
     for (const r of s.rocks) {
-      ctx.fillStyle = `rgba(255,107,107,${0.25 + 0.3 * pulse})`;
+      ctx.fillStyle = `rgba(224,48,79,${0.25 + 0.3 * pulse})`;
       ctx.beginPath(); ctx.ellipse(r.tx, GROUND + 4, 22, 5, 0, 0, Math.PI * 2); ctx.fill();
     }
   }
@@ -346,9 +346,9 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     ctx.rotate(lean);
     ctx.translate(-130, -244);
     const white = b.flash > 0;
-    const body = white ? '#FFFFFF' : b.enraged ? '#2A1A22' : '#1A2233';
-    const limb = white ? '#FFFFFF' : b.enraged ? '#221419' : '#141B28';
-    const edge = b.enraged ? '#FF6B6B' : b.color;
+    const body = white ? '#FFFFFF' : b.enraged ? '#340A13' : '#1A2E52';
+    const limb = white ? '#FFFFFF' : b.enraged ? '#2A0810' : '#122240';
+    const edge = b.enraged ? '#E0304F' : b.color;
     const poly = (pts, fill) => {
       ctx.beginPath();
       pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
@@ -366,8 +366,8 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     poly([[130, 24], [186, 70], [176, 138], [84, 138], [74, 70]], body);
     armPoly([186, 72], [[186, 72], [226, 120], [212, 170], [190, 130]], arm);
     // glowing eyes
-    ctx.shadowColor = '#FF6B6B'; ctx.shadowBlur = b.state === 'idle' ? 8 : 18;
-    ctx.fillStyle = b.state === 'stunned' ? '#5A6478' : '#FF6B6B';
+    ctx.shadowColor = '#E0304F'; ctx.shadowBlur = b.state === 'idle' ? 8 : 18;
+    ctx.fillStyle = b.state === 'stunned' ? '#4C6C81' : '#E0304F';
     ctx.fillRect(104, 80, 14, 8); ctx.fillRect(142, 80, 14, 8);
     ctx.shadowBlur = 0;
     // cracks appear as it loses health
@@ -403,8 +403,8 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     const blink = !ghost && p.inv > 0 && st !== 'dodge' && Math.floor(s.time * 20) % 2 === 0;
     ctx.globalAlpha = ghost ? f.life * 1.6 : blink ? 0.45 : 1;
     const red = !ghost && p.flash > 0;
-    const skin = red ? '#FF6B6B' : '#E8ECF4';
-    const suit = red ? '#FF6B6B' : '#1E2A3D';
+    const skin = red ? '#E0304F' : '#EDF4F9';
+    const suit = red ? '#E0304F' : '#1A2E52';
 
     // legs
     const moving = st === 'run';
@@ -418,18 +418,18 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     }
     // cape flowing behind
     const wind = Math.sin(s.time * 6) * 4 + (moving ? 10 : 0) + (st === 'jump' ? 8 : 0);
-    ctx.fillStyle = red ? '#FF6B6B' : f.color;
+    ctx.fillStyle = red ? '#E0304F' : f.color;
     ctx.beginPath(); ctx.moveTo(-2, -80); ctx.quadraticCurveTo(-26 - wind, -58, -30 - wind, -30 + Math.sin(s.time * 8) * 3);
     ctx.lineTo(-8, -40); ctx.closePath(); ctx.fill();
     // torso
     ctx.strokeStyle = suit; ctx.lineWidth = 16;
     ctx.beginPath(); ctx.moveTo(0, -44); ctx.lineTo(2, -78); ctx.stroke();
-    ctx.strokeStyle = red ? '#FF6B6B' : f.color; ctx.lineWidth = 3;
+    ctx.strokeStyle = red ? '#E0304F' : f.color; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(-5, -60); ctx.lineTo(8, -60); ctx.stroke();
     // head + visor
     ctx.fillStyle = skin;
     ctx.beginPath(); ctx.arc(3, -93, 11, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = red ? '#1A0E14' : f.color;
+    ctx.fillStyle = red ? '#340A13' : f.color;
     ctx.fillRect(6, -96, 8, 3);
 
     // sword arm
@@ -451,8 +451,8 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
       ctx.strokeStyle = rgba(p.combo === 3 ? '#F2B84B' : f.color, 0.55); ctx.lineWidth = p.combo === 3 ? 14 : 9;
       ctx.beginPath(); ctx.arc(sx, sy, 62, Math.min(from, a), Math.max(from, a)); ctx.stroke();
     }
-    ctx.strokeStyle = st === 'skill' ? '#8CC4FF' : '#D6DCE6'; ctx.lineWidth = 4;
-    if (st === 'skill' && !ghost) { ctx.shadowColor = '#5AA9FF'; ctx.shadowBlur = 16; }
+    ctx.strokeStyle = st === 'skill' ? '#9AEBFA' : '#B9D3E2'; ctx.lineWidth = 4;
+    if (st === 'skill' && !ghost) { ctx.shadowColor = '#0ECCED'; ctx.shadowBlur = 16; }
     ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + Math.cos(a) * 54, hy + Math.sin(a) * 54); ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.restore();
@@ -462,20 +462,20 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     ctx.font = '700 15px Oxanium, sans-serif';
     ctx.textBaseline = 'alphabetic';
     // fighter
-    ctx.fillStyle = 'rgba(28,36,56,0.88)';
+    ctx.fillStyle = 'rgba(14,26,48,0.88)';
     ctx.beginPath(); ctx.roundRect(16, 14, 264, 66, 12); ctx.fill();
-    ctx.fillStyle = '#E8ECF4'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#EDF4F9'; ctx.textAlign = 'left';
     ctx.fillText(`${p.name} · Lv ${p.level}`, 30, 36);
-    bar(ctx, 30, 46, 236, 9, p.hp / p.maxHp, '#5AD19A');
-    bar(ctx, 30, 61, 236, 7, p.mp / 100, p.mp >= 30 ? '#5AA9FF' : '#2C4A70');
+    bar(ctx, 30, 46, 236, 9, p.hp / p.maxHp, '#0ECCED');
+    bar(ctx, 30, 61, 236, 7, p.mp / 100, p.mp >= 30 ? '#4D8FE8' : '#043780');
     // boss
-    ctx.fillStyle = 'rgba(28,36,56,0.88)';
+    ctx.fillStyle = 'rgba(14,26,48,0.88)';
     ctx.beginPath(); ctx.roundRect(W - 376, 14, 360, 56, 12); ctx.fill();
-    ctx.fillStyle = b.enraged ? '#FF8A8A' : '#E8ECF4'; ctx.textAlign = 'right';
+    ctx.fillStyle = b.enraged ? '#FF5C74' : '#EDF4F9'; ctx.textAlign = 'right';
     ctx.fillText(`${b.name}${b.enraged ? ' · ENRAGED' : ''}`, W - 30, 36);
-    ctx.fillStyle = '#9AA6BA'; ctx.textAlign = 'left'; ctx.font = '500 12px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#87A4B5'; ctx.textAlign = 'left'; ctx.font = '500 12px "JetBrains Mono", monospace';
     ctx.fillText(`${Math.ceil(b.hp)} / ${b.maxHp}`, W - 362, 36);
-    bar(ctx, W - 362, 46, 332, 12, b.hp / b.maxHp, '#FF6B6B');
+    bar(ctx, W - 362, 46, 332, 12, b.hp / b.maxHp, '#E0304F');
   }
 
   function draw(ctx) {
@@ -484,7 +484,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     drawStage(ctx);
     drawTelegraphs(ctx);
     for (const w of s.waves) {
-      ctx.fillStyle = '#3A4458'; ctx.strokeStyle = rgba(b.color, 0.9); ctx.lineWidth = 2;
+      ctx.fillStyle = '#4C6C81'; ctx.strokeStyle = rgba(b.color, 0.9); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(w.x - 16, GROUND); ctx.lineTo(w.x - 4, GROUND - 30); ctx.lineTo(w.x + 4, GROUND - 18); ctx.lineTo(w.x + 14, GROUND - 34); ctx.lineTo(w.x + 20, GROUND); ctx.closePath(); ctx.fill(); ctx.stroke();
     }
     drawBoss(ctx);
@@ -492,13 +492,13 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     drawFighter(ctx, p, false);
     for (const r of s.rocks) {
       ctx.save(); ctx.translate(r.x, r.y); ctx.rotate(r.spin);
-      ctx.fillStyle = '#2A3345'; ctx.strokeStyle = '#9AA6BA'; ctx.lineWidth = 2;
+      ctx.fillStyle = '#25435D'; ctx.strokeStyle = '#87A4B5'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(-12, -4); ctx.lineTo(-2, -13); ctx.lineTo(12, -6); ctx.lineTo(9, 10); ctx.lineTo(-8, 11); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.restore();
     }
     for (const sh of s.shots) {
       ctx.save(); ctx.translate(sh.x, sh.y); ctx.scale(Math.sign(sh.vx), 1);
-      ctx.shadowColor = '#5AA9FF'; ctx.shadowBlur = 24; ctx.strokeStyle = '#8CC4FF'; ctx.lineWidth = 6;
+      ctx.shadowColor = '#0ECCED'; ctx.shadowBlur = 24; ctx.strokeStyle = '#9AEBFA'; ctx.lineWidth = 6;
       ctx.beginPath(); ctx.arc(-20, 0, 42, -1.1, 1.1); ctx.stroke();
       ctx.restore();
     }
@@ -510,7 +510,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     for (const t of s.texts) {
       ctx.globalAlpha = Math.min(1, t.life * 2);
       ctx.font = `800 ${t.big ? 30 : 22}px Oxanium, sans-serif`; ctx.textAlign = 'center';
-      ctx.lineWidth = 4; ctx.strokeStyle = '#06080C'; ctx.strokeText(t.text, t.x, t.y);
+      ctx.lineWidth = 4; ctx.strokeStyle = '#030812'; ctx.strokeText(t.text, t.x, t.y);
       ctx.fillStyle = t.color; ctx.fillText(t.text, t.x, t.y);
     }
     ctx.globalAlpha = 1;

@@ -8,7 +8,7 @@ export default function CharacterCard({ player }) {
   const ch = CHARACTER[player.character] || CHARACTER.rookie;
   const r = rankOf(player.level);
   return (
-    <SystemWindow title="CHARACTER CARD" icon={null} tone="purple">
+    <SystemWindow title="CHARACTER CARD" icon={null} tone="crimson">
       <div className="col" style={{ gap: 16 }}>
         <div className="portrait" style={{ '--c': ch.color }}>
           <Avatar color={ch.color} size={92} />
@@ -20,7 +20,7 @@ export default function CharacterCard({ player }) {
         </div>
         <div className="col" style={{ gap: 8 }}>
           <div className="level-line">LEVEL {player.level}</div>
-          <Bar pct={player.xp / 10} h={6} color="var(--violet)" label="Experience" />
+          <Bar pct={player.xp / 10} h={6} color="var(--crimson)" label="Experience" />
           <span className="muted" style={{ fontSize: 12, textAlign: 'center' }}>{player.xp} / 1000 EXP</span>
         </div>
         <dl className="stat-list">
@@ -35,7 +35,7 @@ export default function CharacterCard({ player }) {
           </div>
           <div className="orb-box">
             <span className="orb">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--violet-soft)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--crimson-soft)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 3c1 3 4 4.5 4 8.5A4 4 0 0 1 8 11.5c0-1.5.7-2.6 1.5-3.5.2 1.6 1 2.5 2 2.5 0-3-1-5 .5-7.5z" /><path d="M6 17c1.5 2.5 3.5 4 6 4s4.5-1.5 6-4" />
               </svg>
             </span>

@@ -2,7 +2,7 @@
 import { CATEGORY, MATERIAL } from './data.js';
 
 export const RANKS = [['E', 1], ['D', 5], ['C', 10], ['B', 20], ['A', 35], ['S', 50]];
-export const RANK_COLOR = { S: '#F2B84B', A: '#FF8A8A', B: '#9B7BFF', C: '#5AA9FF', D: '#5AD19A', E: '#B4BDCC' };
+export const RANK_COLOR = { S: '#F2B84B', A: '#FF5C74', B: '#0ECCED', C: '#4D8FE8', D: '#B9D3E2', E: '#87A4B5' };
 export const XP_PER_LEVEL = 1000;
 export const REWARD = { required: { xp: 25, coins: 10, qty: 1 }, bonus: { xp: 40, coins: 20, qty: 2 }, extra: { xp: 20, coins: 8, qty: 1 }, clear: { xp: 50, coins: 25 } };
 export const RIFT = { xpPerDay: 150, coinsPerDay: 25, hoursPerDay: 1 };
