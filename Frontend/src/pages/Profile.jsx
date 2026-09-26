@@ -50,6 +50,22 @@ export default function Profile() {
           <p className="sys-note" style={{ margin: '4px 0 0' }}>[Stats rise with every quest of their type, and with every level.]</p>
         </SystemWindow>
 
+        <SystemWindow title={`${month.toUpperCase()} HISTORY`} icon={null}>
+          <div className="row muted" style={{ gap: 14, fontSize: 12, justifyContent: 'center', marginBottom: 14 }}>
+              <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ background: 'var(--blue)' }} />All 4</span>
+              <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ background: 'var(--blue-deep)' }} />Partial</span>
+              <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ border: '1.5px solid var(--red)' }} />Missed</span>
+            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 6 }}>
+            {days.map((d) => (
+              <div key={d.n} title={d.label} aria-label={d.label} style={{ height: 30, borderRadius: 'var(--r-sm)', background: d.bg, border: `1.5px solid ${d.ring}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: d.fg }}>{d.n}</div>
+            ))}
+          </div>
+        </SystemWindow>
+
+      </div>
+
+      <div className="col" style={{ flex: '1 1 520px', gap: 20 }}>
         <SystemWindow title="INVENTORY" icon={null} tone="violet">
           {(() => {
             const MAT_DESC = { VITALS: 'Forged from sweat. Drops from Vitals quests.', PHOTO: 'Grows where proof is shown. Drops from Photo quests.', FOCUS: 'Condensed focus. Drops from Focus quests.', HONOR: 'A promise kept. Drops from Honor quests.' };
@@ -84,22 +100,6 @@ export default function Profile() {
           <p className="sys-note" style={{ margin: '12px 0 0' }}>[Materials drop from quests · rare drops reward quest milestones and cleared days · potions come from the marketplace]</p>
         </SystemWindow>
 
-      </div>
-
-      <div className="col" style={{ flex: '1 1 520px', gap: 20 }}>
-        <SystemWindow title={`${month.toUpperCase()} HISTORY`} icon={null}>
-          <div className="row muted" style={{ gap: 14, fontSize: 12, justifyContent: 'center', marginBottom: 14 }}>
-              <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ background: 'var(--blue)' }} />All 4</span>
-              <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ background: 'var(--blue-deep)' }} />Partial</span>
-              <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ border: '1.5px solid var(--red)' }} />Missed</span>
-            </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 6 }}>
-            {days.map((d) => (
-              <div key={d.n} title={d.label} aria-label={d.label} style={{ height: 30, borderRadius: 'var(--r-sm)', background: d.bg, border: `1.5px solid ${d.ring}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: d.fg }}>{d.n}</div>
-            ))}
-          </div>
-        </SystemWindow>
-
         <SystemWindow title="POTION MARKETPLACE" icon={null} tone="violet">
           <div className="col" style={{ gap: 14 }}>
             <p className="sys-note">[Balance: <span className="gold">{player.coins} coins</span> · potions you buy go to your inventory · drink them from there]</p>
@@ -114,11 +114,11 @@ export default function Profile() {
                 </button>
               ))}
             </div>
-            <button className="btn-danger" style={{ alignSelf: 'center' }} onClick={() => { if (confirm('Erase all progress and start over?')) reset(); }}>Reset progress</button>
           </div>
         </SystemWindow>
       </div>
     </div>
+    <button className="btn-danger" style={{ alignSelf: 'center' }} onClick={() => { if (confirm('Erase all progress and start over?')) reset(); }}>Reset progress</button>
     </div>
   );
 }

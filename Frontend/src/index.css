@@ -427,7 +427,7 @@ button.inv-slot[aria-pressed="true"] { outline: 2px solid var(--c); outline-offs
 .portrait-open { display: block; border-radius: var(--r-md); transition: transform .2s; }
 .portrait-open:hover { transform: translateY(-3px) scale(1.02); }
 .portrait-open:focus-visible { outline: 2px solid var(--c); outline-offset: 4px; }
-.inv-grid.wide { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.inv-grid.wide { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
 .inv-grid.wide .inv-slot > svg { width: 26px; height: auto; max-height: 32px; }
 .portrait-open { background: none; border: 0; padding: 0; cursor: pointer; }
 .dev-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 0; background: transparent; color: inherit; overflow: auto; }
