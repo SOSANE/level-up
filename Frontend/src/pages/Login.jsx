@@ -7,8 +7,8 @@ const QUESTIONS = [
   { id: 'time', text: 'When do you have the most energy?', opts: ['Early morning', 'Afternoon', 'Evening', 'Late night'] },
   { id: 'len', text: 'How long can you give one quest on a normal day?', opts: ['10 minutes', '15 minutes', '30 minutes', '45+ minutes'] },
   { id: 'goal', text: 'What do you want to change first?', opts: ['Body and health', 'Focus and study', 'Home and routine', 'Social life'] },
-  { id: 'topic', text: 'Which of these pulls you in the most?', opts: ['Gym', 'Anime', 'Music', 'Books', 'Nature walks'] },
-  { id: 'fitness', text: 'How active are you right now?', opts: ['Barely moving', 'I walk sometimes', 'Workout 1–2× a week', 'Workout 3+× a week'] },
+  { id: 'topic', text: 'Which of these pulls you in the most?', opts: ['Gym', 'Anime & Shows', 'Music', 'Books', 'Nature walks'] },
+  { id: 'fitness', text: 'How active are you right now?', opts: ['Barely moving', 'I walk sometimes', 'Workout 1–2 × a week', 'Workout 3+ × a week'] },
   { id: 'place', text: 'Where can you train?', opts: ['A gym', 'At home', 'Outdoors', 'Nowhere yet'] },
   { id: 'sleep', text: 'When do you usually fall asleep?', opts: ['Before 11 pm', '11 pm – 1 am', 'After 1 am', 'Different every night'] },
   { id: 'screen', text: 'Daily screen time outside work or school?', opts: ['Under 2 hours', '2–4 hours', '4–6 hours', '6+ hours'] },
@@ -25,7 +25,7 @@ const MSGS = {
   quiz: '[SYSTEM] Answer honestly. The System adapts to the truth, not to what sounds good.',
   done: '[SYSTEM] Assessment complete. Rank E assigned. Everyone starts somewhere.'
 };
-const DIFFICULTY = { 'Barely moving': 'Gentle', 'I walk sometimes': 'Easy', 'Workout 1–2× a week': 'Normal', 'Workout 3+× a week': 'Hard' };
+const DIFFICULTY = { 'Barely moving': 'Gentle', 'I walk sometimes': 'Easy', 'Workout 1–2 × a week': 'Normal', 'Workout 3+ × a week': 'Hard' };
 
 export default function Login() {
   const { player, update } = usePlayer();
