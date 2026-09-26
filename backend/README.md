@@ -4,6 +4,9 @@ Node + Express 5 + **Tiger Data** (PostgreSQL + TimescaleDB) through plain SQL w
 The game rules match the frontend (`frontend/src/api/game.js`): 30 categories, 4 proof types, 4 required quests + a bonus a day,
 1000 EXP per level with every bar full, the Rift, and the potion shop.
 
+Diagrams: [database](../docs/database.md) (tables, time-series flow, policies) and
+[state machines](../docs/state-machines.md) (quests, verification, game day, Rift, levels, vitals, audio).
+
 ## Get it running (15 minutes)
 
 1. Install Node 20 or newer, then `npm install`.
