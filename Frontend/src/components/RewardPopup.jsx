@@ -1,6 +1,7 @@
 // Shown after a quest: coins count up, the material drops in, the category bar fills.
 import { useEffect, useState } from 'react';
 import SystemWindow from './SystemWindow.jsx';
+import VitalsChart from './VitalsChart.jsx';
 import { Bar, CoinIcon, MaterialIcon } from './ui.jsx';
 
 export default function RewardPopup({ reward, onClose }) {
@@ -41,6 +42,7 @@ export default function RewardPopup({ reward, onClose }) {
             <div className="row between" style={{ fontSize: 14 }}><span>{reward.category} bar</span><span className="muted">{bar} / 10</span></div>
             <Bar pct={bar * 10} color="var(--gold)" h={10} label={`${reward.category} bar`} />
           </div>
+          {reward.vitals && <VitalsChart vitals={reward.vitals} />}
           {reward.stat && <p className="sys-note" style={{ margin: 0 }}>[{reward.stat} +2]</p>}
           <button className="btn btn-light" onClick={onClose} autoFocus>Continue</button>
         </div>
