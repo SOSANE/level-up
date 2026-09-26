@@ -1,12 +1,13 @@
-// Player state: one object in localStorage, shared through context.
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
+// Player state: one object in localStorage, shared through context (context lives in playerContext.js).
+import { useCallback, useContext, useRef, useState } from 'react';
 import { checkMissedDays, today } from './game.js';
+import { PlayerContext as Ctx } from './playerContext.js';
 
 const KEY = 'second-awakening';
 
 const fresh = () => ({
   name: 'Player', character: null, onboarded: false, level: 1, xp: 0, coins: 50,
-  chosen: [], answers: {}, bars: {}, materials: {}, history: {}, items: {}, questsDone: 0,
+  chosen: [], answers: {}, bars: {}, materials: {}, history: {}, items: {}, stats: {}, questsDone: 0,
   started: today(), lastCheck: today(), day: null, rift: null
 });
 
@@ -18,8 +19,6 @@ function load() {
   checkMissedDays(p);
   return p;
 }
-
-const Ctx = createContext(null);
 
 export function PlayerProvider({ children }) {
   const ref = useRef(null);

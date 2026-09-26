@@ -15,7 +15,7 @@ export default function Nav() {
         <NavLink to="/profile" className="navlink">Profile</NavLink>
       </div>
       <div className="row" style={{ gap: 10 }}>
-        <span className="pill" aria-label={`${player.coins} coins`}><CoinIcon /><b>{player.coins}</b></span>
+        <span className="pill coins" aria-label={`${player.coins} coins`}><CoinIcon /><b>{player.coins}</b></span>
         <span className="pill hide-sm" aria-label={`${player.xp} of 1000 EXP`}>
           <span className="mono" style={{ color: 'var(--blue)', fontSize: 11 }}>EXP</span>
           <Bar pct={player.xp / 10} w={72} />

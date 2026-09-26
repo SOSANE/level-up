@@ -4,8 +4,12 @@ import { CATEGORY, MATERIAL } from './data.js';
 export const RANKS = [['E', 1], ['D', 5], ['C', 10], ['B', 20], ['A', 35], ['S', 50]];
 export const RANK_COLOR = { S: '#F2B84B', A: '#FF8A8A', B: '#9B7BFF', C: '#5AA9FF', D: '#5AD19A', E: '#B4BDCC' };
 export const XP_PER_LEVEL = 1000;
-export const REWARD = { required: { xp: 25, coins: 10, qty: 1 }, bonus: { xp: 40, coins: 20, qty: 2 }, clear: { xp: 50, coins: 25 } };
+export const REWARD = { required: { xp: 25, coins: 10, qty: 1 }, bonus: { xp: 40, coins: 20, qty: 2 }, extra: { xp: 20, coins: 8, qty: 1 }, clear: { xp: 50, coins: 25 } };
 export const RIFT = { xpPerDay: 150, coinsPerDay: 25, hoursPerDay: 1 };
+
+// Each verification type trains one stat; stats also rise with level.
+export const STAT_OF = { VITALS: 'Strength', FOCUS: 'Intelligence', PHOTO: 'Perception', HONOR: 'Willpower' };
+export const stats = (p) => Object.entries(STAT_OF).map(([proof, name]) => ({ name, proof, value: 10 + (p.level - 1) * 3 + ((p.stats || {})[proof] || 0) * 2 }));
 
 export const today = (d = new Date()) => d.toLocaleDateString('en-CA'); // YYYY-MM-DD, local
 export const rankOf = (level) => RANKS.filter((r) => level >= r[1]).pop()[0];
@@ -27,11 +31,21 @@ export function todaysQuests(p) {
   const n = p.chosen.length;
   if (!n) return [];
   const off = Math.floor(new Date(today()).getTime() / 864e5) % n;
-  return [0, 1, 2, 3, 4].map((k) => {
+  const count = Math.min(n, 5 + (p.day.extra || 0)); // never repeat a category in one day
+  return Array.from({ length: count }, (_, k) => {
     const c = CATEGORY[p.chosen[(off + k) % n]];
-    const kind = k === 4 ? 'bonus' : 'required';
+    const kind = k < 4 ? 'required' : k === 4 ? 'bonus' : 'extra';
     return { ...c, kind, reward: { ...REWARD[kind], material: MATERIAL[c.proof] } };
   });
+}
+
+// Once everything listed today is done, the player can take on another quest (one category each).
+export function canAddQuest(p) {
+  const qs = todaysQuests(p);
+  return qs.length < p.chosen.length && qs.every((q) => p.day.status[q.id] === 'done');
+}
+export function addQuest(p) {
+  if (canAddQuest(p)) p.day.extra = (p.day.extra || 0) + 1;
 }
 
 export function completeQuest(p, id) {
@@ -44,6 +58,9 @@ export function completeQuest(p, id) {
   r.barTo = p.bars[id];
   p.materials[r.material.name] = (p.materials[r.material.name] || 0) + r.qty;
   p.questsDone++;
+  p.stats = p.stats || {};
+  p.stats[q.proof] = (p.stats[q.proof] || 0) + 1;
+  r.stat = STAT_OF[q.proof];
   gain(p, r.xp, r.coins);
   if (!p.day.cleared && quests.slice(0, 4).every((x) => p.day.status[x.id] === 'done')) {
     p.day.cleared = true;

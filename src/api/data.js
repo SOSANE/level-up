@@ -35,11 +35,13 @@ export const CATEGORY = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 export const MIN_CATEGORIES = 10;
 
 export const PROOF_LABEL = { PHOTO: 'Photo', VITALS: 'Vitals', FOCUS: 'Focus', HONOR: 'Honor' };
+// One accent per verification type, reused for its material, stat, bars and quest icons (hex: the canvas reads these too).
+export const PROOF_COLOR = { VITALS: '#FF8A6B', FOCUS: '#5AA9FF', PHOTO: '#5AD19A', HONOR: '#F2B84B' };
 export const PROOF_CTA = { PHOTO: 'Upload photo proof', VITALS: 'Run vitals check', FOCUS: 'End focus session', HONOR: 'I did it' };
 
 // Each verification type drops its own crafting material.
 export const MATERIAL = {
-  VITALS: { name: 'Iron ore', color: '#9AA6BA' },
+  VITALS: { name: 'Iron ore', color: '#FF8A6B' },
   PHOTO: { name: 'Spirit herb', color: '#5AD19A' },
   FOCUS: { name: 'Mana crystal', color: '#5AA9FF' },
   HONOR: { name: 'Oath token', color: '#F2B84B' }
@@ -48,7 +50,7 @@ export const MATERIAL = {
 export const CHARACTERS = [
   { id: 'rookie', name: 'The Rookie', color: '#F2B84B', intro: 'Starts from zero and owns it. No talent, no excuses — just shows up again tomorrow.' },
   { id: 'striver', name: 'The Striver', color: '#5AD19A', intro: 'Loud, stubborn, relentless. Would rather fail trying than wait for the perfect day.' },
-  { id: 'scholar', name: 'The Scholar', color: '#9B7BFF', intro: 'Sharp mind, messy routine. Wins through focus, one quiet block at a time.' }
+  { id: 'scholar', name: 'The Scholar', color: '#A58BFF', intro: 'Sharp mind, messy routine. Wins through focus, one quiet block at a time.' }
 ];
 export const CHARACTER = Object.fromEntries(CHARACTERS.map((c) => [c.id, c]));
 

@@ -41,16 +41,16 @@ export default function Login() {
           <Link to="/" className="brand" style={{ fontSize: 18 }}>SECOND AWAKENING</Link>
           <div className="col">
             <span className="mono muted">PLAYER REGISTRATION</span>
-            <h1 className="display" style={{ fontSize: 40, lineHeight: 1.1 }}>Four steps to Rank E.</h1>
+            <h1 className="page-title">Four steps to Rank E.</h1>
           </div>
           <ol className="col" style={{ margin: 0, padding: 0, listStyle: 'none', gap: 6 }}>
             {LABELS.map((l, k) => {
-              const ring = k < idx ? '#5AA9FF' : k === idx ? '#E8ECF4' : '#3A4458';
+              const ring = k < idx ? 'var(--blue)' : k === idx ? 'var(--fg)' : 'var(--line3)';
               return (
                 <li key={l} className="row" aria-current={k === idx ? 'step' : undefined}
-                  style={{ gap: 14, padding: '12px 14px', borderRadius: 10, background: k === idx ? '#161D2A' : 'transparent' }}>
+                  style={{ gap: 14, padding: '12px 14px', borderRadius: 'var(--r-md)', background: k === idx ? 'var(--raised)' : 'transparent' }}>
                   <span className="step-num" style={{ borderColor: ring, color: ring }}>{k < idx ? '✓' : k + 1}</span>
-                  <span style={{ fontSize: 16, color: k <= idx ? '#E8ECF4' : '#7E8AA0' }}>{l}</span>
+                  <span style={{ fontSize: 16, color: k <= idx ? 'var(--fg)' : 'var(--dim)' }}>{l}</span>
                 </li>
               );
             })}
@@ -63,7 +63,7 @@ export default function Login() {
         {step === 'signin' && (
           <div className="col" style={{ width: 440, maxWidth: '100%', gap: 28 }}>
             <div className="col">
-              <h2 className="display" style={{ fontSize: 36 }}>Enter the System</h2>
+              <h2 className="display" style={{ fontSize: 32 }}>Enter the System</h2>
               <p className="soft" style={{ fontSize: 17, lineHeight: 1.55 }}>One account. Your quests, your bars, your rank — saved wherever you sign in.</p>
             </div>
             {/* ponytail: demo sign-in; plug Auth0's Google connection in here when there's a backend */}
@@ -77,16 +77,16 @@ export default function Login() {
 
         {step === 'auth' && (
           <div className="col" style={{ width: 480, maxWidth: '100%', gap: 28 }}>
-            <h2 className="display" style={{ fontSize: 36 }}>Identity confirmed</h2>
+            <h2 className="display" style={{ fontSize: 32 }}>Identity confirmed</h2>
             <div className="col" style={{ gap: 8 }}>
               <label htmlFor="name" className="mono muted">PLAYER NAME</label>
               <input id="name" className="input" defaultValue={player.name} maxLength={24} autoComplete="nickname"
                 onChange={(e) => update((p) => { p.name = e.target.value.trim() || 'Player'; })} />
             </div>
             <ul className="col" style={{ margin: 0, padding: 0, listStyle: 'none', gap: 14, fontSize: 16 }}>
-              <li className="row"><Check color="#5AA9FF" />Account linked</li>
-              <li className="row"><Check color="#5AA9FF" />Session created</li>
-              <li className="row"><Check color="#5AA9FF" />Player profile created at Rank E · Level 1</li>
+              <li className="row"><Check color="var(--blue)" />Account linked</li>
+              <li className="row"><Check color="var(--blue)" />Session created</li>
+              <li className="row"><Check color="var(--blue)" />Player profile created at Rank E · Level 1</li>
             </ul>
             <p className="soft" style={{ fontSize: 16, lineHeight: 1.55 }}>Before your first quest, Gemini asks twelve quick questions (about 2 minutes) so the quests fit your life, not someone else’s.</p>
             <button className="btn btn-blue" style={{ height: 56, fontSize: 17 }} onClick={() => { setQ(0); setStep('quiz'); }}>Begin assessment</button>
@@ -104,7 +104,7 @@ export default function Login() {
                 <span className="mono muted">{q + 1} / {QUESTIONS.length}</span>
               </div>
               <Bar pct={((q + (cur ? 1 : 0)) / QUESTIONS.length) * 100} color="var(--violet)" label="Assessment progress" />
-              <h2 className="display" style={{ fontSize: 34, lineHeight: 1.2 }}>{Q.text}</h2>
+              <h2 className="display" style={{ fontSize: 32, lineHeight: 1.2 }}>{Q.text}</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
                 {Q.opts.map((o) => (
                   <button key={o} className="choice" aria-pressed={cur === o} onClick={() => update((p) => { p.answers[Q.id] = o; })}>{o}</button>
@@ -124,10 +124,10 @@ export default function Login() {
               <div className="rank-box" style={{ width: 88, height: 88, fontSize: 48 }}>E</div>
               <div className="col" style={{ gap: 4 }}>
                 <span className="mono muted">INITIAL RANK</span>
-                <h2 className="display" style={{ fontSize: 34 }}>Awakening confirmed</h2>
+                <h2 className="display" style={{ fontSize: 32 }}>Awakening confirmed</h2>
               </div>
             </div>
-            <div style={{ border: '1px solid var(--line2)', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ border: '1px solid var(--line2)', borderRadius: 'var(--r-md)', overflow: 'hidden' }}>
               {[['First focus', A.goal], ['Starting quest length', A.len], ['Quests arrive', A.time], ['Starting difficulty', DIFFICULTY[A.fitness]],
                 ['Training spot', A.place], ['Main enemy', A.weak], ['Daily minimum', '4 quests'], ['System voice', A.voice]].map(([k, v]) => (
                 <div key={k} className="row between" style={{ padding: '11px 18px', borderBottom: '1px solid var(--line)', fontSize: 16 }}>

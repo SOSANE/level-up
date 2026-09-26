@@ -23,14 +23,14 @@ function HeartRate() {
         {reading?.simulated && <span className="mono dim" style={{ fontSize: 11 }}>SIMULATED</span>}
       </div>
       <div className="row" style={{ gap: 14 }}>
-        <svg className="beat" width="30" height="30" viewBox="0 0 24 24" fill="#FF6B6B" aria-hidden="true">
+        <svg className="beat" width="30" height="30" viewBox="0 0 24 24" fill="var(--red)" aria-hidden="true">
           <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
         </svg>
         <span className="display" style={{ fontSize: 44 }} aria-live="off">{reading ? reading.bpm : '--'}</span>
         <span className="muted">BPM</span>
       </div>
       <svg viewBox="0 0 290 60" style={{ width: '100%', height: 60 }} aria-hidden="true">
-        <polyline points={pts} fill="none" stroke="#FF6B6B" strokeWidth="2" strokeLinejoin="round" />
+        <polyline points={pts} fill="none" stroke="var(--red)" strokeWidth="2" strokeLinejoin="round" />
       </svg>
     </section>
   );

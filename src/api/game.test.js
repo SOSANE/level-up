@@ -1,6 +1,6 @@
 // Run: npm test
 import assert from 'node:assert/strict';
-import { checkMissedDays, completeQuest, rankOf, sendToRift, today, todaysQuests } from './game.js';
+import { addQuest, canAddQuest, checkMissedDays, completeQuest, rankOf, sendToRift, stats, today, todaysQuests } from './game.js';
 import { CATEGORIES } from './data.js';
 
 const player = () => ({
@@ -15,11 +15,27 @@ const qs = todaysQuests(p);
 assert.equal(qs.length, 5);
 const r = completeQuest(p, qs[0].id);
 assert.deepEqual([r.coins, r.qty, r.barFrom, r.barTo], [10, 1, 0, 1]);
+assert.equal(stats(p).find((x) => x.name === r.stat).value, 12, 'quest trains its stat');
 assert.equal(completeQuest(p, qs[0].id), null, 'cannot claim twice');
 qs.slice(1, 4).forEach((q) => completeQuest(p, q.id));
 assert.ok(p.day.cleared);
 assert.equal(p.coins, 50 + 40 + 25);
 assert.equal(p.history[today()], 'd');
+
+// Extra quests: only once everything is done, one new category each, never a repeat.
+assert.equal(canAddQuest(p), false, 'bonus quest still open');
+completeQuest(p, qs[4].id);
+assert.ok(canAddQuest(p));
+addQuest(p);
+const more = todaysQuests(p);
+assert.equal(more.length, 6);
+assert.equal(more[5].kind, 'extra');
+assert.equal(canAddQuest(p), false, 'new extra quest not done yet');
+assert.equal(completeQuest(p, more[5].id).coins, 8);
+for (let k = 0; k < 10; k++) { addQuest(p); todaysQuests(p).forEach((q) => completeQuest(p, q.id)); }
+assert.equal(todaysQuests(p).length, 10, 'capped at the number of chosen categories');
+assert.equal(new Set(todaysQuests(p).map((q) => q.id)).size, 10);
+assert.equal(canAddQuest(p), false);
 
 // Rift: losses are exact and can drop level and rank.
 const q = { ...player(), level: 10, xp: 100, coins: 30 };

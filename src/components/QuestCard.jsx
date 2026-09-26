@@ -1,38 +1,50 @@
-// Daily quest card: category, title, duration, verification type, coin + material reward.
+// One goal row in the Quest Info window: category, title, duration, verification type, coin + material reward.
 import { Link } from 'react-router-dom';
-import { PROOF_LABEL } from '../api/data.js';
-import { Check, CoinIcon, MaterialIcon } from './ui.jsx';
+import { PROOF_COLOR, PROOF_LABEL } from '../api/data.js';
+import { STAT_OF } from '../api/game.js';
+import { CoinIcon, MaterialIcon, ProofChip } from './ui.jsx';
+
+const TAG = { required: ['REQUIRED', 'var(--raised)', 'var(--blue-soft)'], bonus: ['BONUS', 'var(--gold-tint)', 'var(--gold)'], extra: ['EXTRA', 'var(--violet-tint)', 'var(--violet-soft)'] };
 
 export default function QuestCard({ quest, status }) {
-  const bonus = quest.kind === 'bonus';
+  const [tag, tagBg, tagFg] = TAG[quest.kind];
   const active = typeof status === 'number';
+  const done = status === 'done';
   const { reward } = quest;
   return (
-    <article className="card col" style={{ padding: '16px 20px', gap: 12, borderColor: active ? '#5AA9FF' : status === 'done' ? '#1E3A5C' : undefined }}>
-      <div className="row between wrap" style={{ gap: 20 }}>
-        <div className="col" style={{ gap: 6 }}>
-          <span className="row mono muted wrap" style={{ gap: 10, fontSize: 11, letterSpacing: '.1em' }}>
-            <span className="tag" style={{ background: bonus ? '#2A2110' : '#16202F', color: bonus ? '#F2B84B' : '#8CC4FF' }}>{bonus ? 'BONUS' : 'REQUIRED'}</span>
-            {quest.name.toUpperCase()}
-          </span>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{quest.title}</h3>
-          <div className="row wrap muted" style={{ gap: 16, fontSize: 13 }}>
-            <span>{quest.mins} min</span>
-            <span>{PROOF_LABEL[quest.proof]} verification</span>
+    <article className={`goal-row${done ? ' done' : ''}${active ? ' active' : ''}`}>
+      <div className="row between" style={{ gap: 16, alignItems: 'flex-start' }}>
+        <div className="row" style={{ gap: 14, alignItems: 'flex-start', minWidth: 0 }}>
+          <ProofChip proof={quest.proof} color={PROOF_COLOR[quest.proof]} />
+          <div className="col" style={{ gap: 6, minWidth: 0 }}>
+            <span className="row mono muted wrap" style={{ gap: 10, fontSize: 11, letterSpacing: '.1em' }}>
+              <span className="tag" style={{ background: tagBg, color: tagFg }}>{tag}</span>
+              {quest.name.toUpperCase()}
+            </span>
+            <h3 className="goal-title">{quest.title}</h3>
+            <div className="row wrap muted" style={{ gap: 14, fontSize: 13 }}>
+              <span>{quest.mins} min</span>
+              <span>{PROOF_LABEL[quest.proof]} verification</span>
+              <span className="proof-text" style={{ '--c': PROOF_COLOR[quest.proof] }}>+{STAT_OF[quest.proof]}</span>
+            </div>
           </div>
         </div>
-        {status === 'done' ? (
-          <span className="row" style={{ gap: 8, color: 'var(--blue)', fontWeight: 600 }}><Check />Claimed</span>
-        ) : (
-          <Link className={`btn ${active ? 'btn-blue' : 'btn-light'}`} style={{ height: 48, padding: '0 22px', fontSize: 15 }} to={`/quest/${quest.id}`}>
+        <div className="row" style={{ gap: 10, flexShrink: 0 }}>
+          <span className="bracket">[{done ? 1 : 0}/1]</span>
+          <span className={`goal-check${done ? ' on' : ''}`} role="img" aria-label={done ? 'Completed' : 'Not completed'}>{done ? '✓' : ''}</span>
+        </div>
+      </div>
+      <div className="row between wrap" style={{ gap: 12 }}>
+        <div className="row wrap" style={{ gap: 16, fontSize: 13, color: 'var(--gold-soft)' }}>
+          <span className="row" style={{ gap: 6 }}><CoinIcon size={16} />+{reward.coins} coins</span>
+          <span className="row" style={{ gap: 6 }}><MaterialIcon color={reward.material.color} size={16} />{reward.qty}× {reward.material.name}</span>
+          <span className="muted">+{reward.xp} EXP</span>
+        </div>
+        {!done && (
+          <Link className={`btn ${active ? 'btn-blue' : 'btn-light'}`} style={{ height: 44, padding: '0 20px', fontSize: 15 }} to={`/quest/${quest.id}`}>
             {active ? 'Resume quest' : 'Start quest'}
           </Link>
         )}
-      </div>
-      <div className="row wrap" style={{ gap: 16, fontSize: 13, color: '#F2D9A0' }}>
-        <span className="row" style={{ gap: 6 }}><CoinIcon size={16} />+{reward.coins} coins</span>
-        <span className="row" style={{ gap: 6 }}><MaterialIcon color={reward.material.color} size={16} />{reward.qty}× {reward.material.name}</span>
-        <span className="muted">+{reward.xp} EXP · +1 {quest.name}</span>
       </div>
     </article>
   );

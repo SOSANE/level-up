@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
-import { CATEGORIES, CHARACTERS, MIN_CATEGORIES, PROOF_LABEL } from '../api/data.js';
+import { CATEGORIES, CHARACTERS, MIN_CATEGORIES, PROOF_COLOR, PROOF_LABEL } from '../api/data.js';
 import { today } from '../api/game.js';
 import { Avatar, Bar } from '../components/ui.jsx';
 
@@ -37,7 +37,7 @@ export default function Onboarding() {
         <>
           <div className="row between wrap" style={{ alignItems: 'flex-end', gap: '24px 40px' }}>
             <div className="col" style={{ gap: 8 }}>
-              <h1 className="display" style={{ fontSize: 38 }}>Choose at least 10 categories</h1>
+              <h1 className="page-title">Choose at least 10 categories</h1>
               <p className="soft" style={{ fontSize: 16 }}>Each category gets its own progress bar. Your daily quests rotate through them.</p>
             </div>
             <div className="col" style={{ width: 280, gap: 8 }}>
@@ -57,7 +57,7 @@ export default function Onboarding() {
                     <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{c.name}</span>
                     <span className="checkbox" aria-hidden="true">{on ? '✓' : ''}</span>
                   </span>
-                  <span className="mono muted" style={{ fontSize: 11, letterSpacing: '.08em' }}>{PROOF_LABEL[c.proof].toUpperCase()} PROOF</span>
+                  <span className="mono proof-text" style={{ fontSize: 11, letterSpacing: '.08em', '--c': PROOF_COLOR[c.proof] }}>{PROOF_LABEL[c.proof].toUpperCase()} PROOF</span>
                 </button>
               );
             })}
@@ -70,7 +70,7 @@ export default function Onboarding() {
       ) : (
         <>
           <div className="col" style={{ gap: 8 }}>
-            <h1 className="display" style={{ fontSize: 38 }}>Choose your starter character</h1>
+            <h1 className="page-title">Choose your starter character</h1>
             <p className="soft" style={{ fontSize: 16 }}>More characters unlock as you level up.</p>
           </div>
           <div role="radiogroup" aria-label="Starter character" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
@@ -78,8 +78,8 @@ export default function Onboarding() {
               const on = character === c.id;
               return (
                 <button key={c.id} role="radio" aria-checked={on} onClick={() => setCharacter(c.id)} className="card col"
-                  style={{ gap: 16, padding: 24, textAlign: 'left', borderColor: on ? c.color : undefined, background: on ? '#141A26' : undefined }}>
-                  <div style={{ height: 140, borderRadius: 12, background: 'var(--deep)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  style={{ gap: 16, padding: 24, textAlign: 'left', borderColor: on ? c.color : undefined, background: on ? 'var(--raised)' : undefined }}>
+                  <div style={{ height: 140, borderRadius: 'var(--r-md)', background: 'var(--deep)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Avatar color={c.color} size={90} />
                   </div>
                   <span className="display" style={{ fontSize: 22, color: on ? c.color : undefined }}>{c.name}</span>

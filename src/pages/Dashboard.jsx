@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
-import { sendToRift, today, todaysQuests } from '../api/game.js';
+import { REWARD, addQuest, canAddQuest, sendToRift, today, todaysQuests } from '../api/game.js';
 import Hud from '../components/Hud.jsx';
 import QuestCard from '../components/QuestCard.jsx';
 import RewardPopup from '../components/RewardPopup.jsx';
+import SystemWindow from '../components/SystemWindow.jsx';
 
 export default function Dashboard() {
   const { player, update } = usePlayer();
@@ -26,37 +27,54 @@ export default function Dashboard() {
 
   return (
     <div className="page col" style={{ gap: 24 }}>
-      <div className="row between wrap">
-        <span className="mono" style={{ color: 'var(--blue)' }}>[DAILY QUEST] · LEVEL {player.level}</span>
-        <span className="mono muted" style={{ fontSize: 13 }}>{weekday} · DAY {dayN} OF YOUR AWAKENING</span>
-      </div>
+      <header className="page-head">
+        <span className="eyebrow">{weekday} · DAY {dayN} OF YOUR AWAKENING</span>
+        <h1 className="page-title">Today’s quests</h1>
+        <p className="page-sub">Clear the 4 required quests to seal the Rift. Everything else is extra EXP.</p>
+      </header>
 
       {player.rift && (
-        <Link to="/rift" className="card row between wrap" style={{ borderColor: '#4A2A2E', background: '#150F12', color: 'var(--red)', textDecoration: 'none' }}>
+        <Link to="/rift" className="card row between wrap" style={{ borderColor: 'var(--red-line)', background: 'var(--red-tint)', color: 'var(--red)', textDecoration: 'none' }}>
           <span className="mono">{riftActive ? '[RIFT] YOUR CHARACTER IS STILL TRAPPED' : '[RIFT] THE RIFT HAS OPENED — ESCAPE NOW'}</span><span>View the Rift →</span>
         </Link>
       )}
 
       <div className="row wrap" style={{ gap: 32, alignItems: 'flex-start' }}>
-        <section className="col" style={{ flex: '1 1 560px', gap: 16 }} aria-labelledby="today">
-          <div className="row between wrap" style={{ alignItems: 'flex-end' }}>
-            <h1 id="today" className="display" style={{ fontSize: 34 }}>Today: 4 quests minimum</h1>
-            <b style={{ fontSize: 16 }}>{done} / 4 required</b>
-          </div>
-          {quests.map((q) => <QuestCard key={q.id} quest={q} status={status[q.id]} />)}
-          {player.day.cleared && (
-            <div className="sys" style={{ borderColor: 'var(--gold)', color: '#F2D9A0' }}>
-              [SYSTEM] 4 quests cleared · daily bonus +50 EXP · +25 coins. Rift sealed for today. Jinho: “Not bad. Same time tomorrow.”
+        <div className="col" style={{ flex: '1 1 560px', gap: 16, minWidth: 0 }}>
+          <SystemWindow title="QUEST INFO">
+            <p className="sys-note">[Daily Quest: {quests.length} quests have arrived. Clear 4 to seal the Rift.]</p>
+            <h3 className="goal-heading">GOAL</h3>
+            <div className="row between" style={{ fontSize: 14, marginBottom: 6 }}>
+              <span className="muted">Required</span>
+              <span className="bracket">[{done}/4]</span>
             </div>
-          )}
-          <div className="card col" style={{ borderColor: '#4A2A2E', background: '#150F12', gap: 10 }}>
-            <span className="mono" style={{ color: 'var(--red)' }}>RIFT WARNING</span>
-            <span style={{ fontSize: 14, lineHeight: 1.5, color: '#D6DCE6' }}>
-              Finish fewer than 4 quests today and your character is banished to the Rift: you lose 150 EXP and 25 coins, entertainment apps lock for 1 hour, and each missed day in a row adds another.
-            </span>
-            <button className="btn-danger" onClick={() => { update((p) => sendToRift(p, 1)); }}>Demo: fail today</button>
-          </div>
-        </section>
+            <div className="col goal-list">
+              {quests.map((q) => <QuestCard key={q.id} quest={q} status={status[q.id]} />)}
+            </div>
+            {player.day.cleared && (
+              <p className="sys-note" style={{ color: 'var(--gold-soft)', '--rgb': '242,184,75', marginTop: 18 }}>
+                [4 quests cleared · daily bonus +50 EXP · +25 coins. Rift sealed for today.] Jinho: “Not bad. Same time tomorrow.”
+              </p>
+            )}
+            {canAddQuest(player) && (
+              <div className="row between wrap add-quest">
+                <div className="col" style={{ gap: 4 }}>
+                  <b>All caught up. Want more?</b>
+                  <span className="muted" style={{ fontSize: 14 }}>Take on another quest: +{REWARD.extra.xp} EXP · +{REWARD.extra.coins} coins · a material · +1 on its bar.</span>
+                </div>
+                <button className="btn btn-blue" style={{ height: 48, fontSize: 15 }} onClick={() => update(addQuest)}>+ Add another quest</button>
+              </div>
+            )}
+            {quests.length === player.chosen.length && quests.every((q) => status[q.id] === 'done') && (
+              <p className="muted" style={{ fontSize: 14, marginTop: 16, textAlign: 'center' }}>You’ve done a quest in every one of your categories today. That’s the whole map — rest up.</p>
+            )}
+            <div className="col warning-block">
+              <p><b>WARNING:</b> Failure to complete the daily quest will result in an appropriate penalty.</p>
+              <p className="muted" style={{ fontSize: 13 }}>Fewer than 4 → banished to the Rift: −150 EXP, −25 coins, apps locked 1 hour (+1 hour per missed day in a row).</p>
+              <button className="btn-danger" style={{ alignSelf: 'center' }} onClick={() => { update((p) => sendToRift(p, 1)); }}>Demo: fail today</button>
+            </div>
+          </SystemWindow>
+        </div>
         <Hud player={player} highlight={reward ? quests.find((q) => q.name === reward.category)?.id : undefined} />
       </div>
 
