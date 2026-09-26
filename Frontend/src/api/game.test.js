@@ -1,6 +1,6 @@
 // Run: npm test
 import assert from 'node:assert/strict';
-import { addQuest, canAddQuest, checkMissedDays, completeQuest, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
+import { addQuest, buyPotion, canAddQuest, drinkPotion, checkMissedDays, completeQuest, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
 import { CATEGORIES } from './data.js';
 import { showcasePlayer } from './demo.js';
 
@@ -23,10 +23,13 @@ qs.slice(1, 4).forEach((q) => completeQuest(p, q.id));
 assert.ok(p.day.cleared);
 assert.equal(p.coins, 50 + 40 + 25);
 assert.equal(p.history[today()], 'd');
+assert.equal(p.materials['Shadow essence'], 1, 'clearing the day drops a shadow essence');
+const fifth = completeQuest(p, qs[4].id); // 5th quest of the run
+assert.deepEqual(fifth.drops.map((x) => x.name), ['Beast core']);
+assert.equal(p.materials['Beast core'], 1);
 
 // Extra quests: only once everything is done, one new category each, never a repeat.
-assert.equal(canAddQuest(p), false, 'bonus quest still open');
-completeQuest(p, qs[4].id);
+assert.equal(canAddQuest(p), true, 'bonus quest done above');
 assert.ok(canAddQuest(p));
 addQuest(p);
 const more = todaysQuests(p);
@@ -65,4 +68,19 @@ assert.ok(streak(demo) >= 100, `streak ${streak(demo)}`);
 assert.equal(Object.values(demo.day.status).filter((v) => v === 'done').length, 2);
 assert.equal(JSON.stringify(real), before, 'real player unchanged');
 
+
+// Potions: buy with coins, drink from the inventory.
+{
+  const q = showcasePlayer({});
+  const coins = q.coins;
+  assert.ok(buyPotion(q, 'haste')); assert.equal(q.coins, coins - 220);
+  q.coins = 0; assert.equal(buyPotion(q, 'haste'), false, 'too poor');
+  assert.ok(drinkPotion(q, 'haste')); assert.equal(drinkPotion(q, 'haste'), false, 'already active');
+  const quest = todaysQuests(q).find((x) => q.day.status[x.id] !== 'done');
+  const won = completeQuest(q, quest.id);
+  assert.ok(won.boost?.length, 'haste doubled the quest');
+  assert.equal(q.buffs.haste, undefined, 'used up');
+  assert.equal(drinkPotion(q, 'revival'), false, 'no Rift to escape');
+  sendToRift(q); assert.ok(drinkPotion(q, 'revival')); assert.equal(q.rift, null);
+}
 console.log('game rules ok');

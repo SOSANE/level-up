@@ -11,7 +11,7 @@ const MODE_KEY = 'second-awakening-mode';
 
 const fresh = () => ({
   name: 'Player', character: null, onboarded: false, level: 1, xp: 0, coins: 50,
-  chosen: [], answers: {}, bars: {}, materials: {}, history: {}, items: {}, stats: {}, questsDone: 0,
+  chosen: [], answers: {}, bars: {}, materials: {}, history: {}, items: {}, buffs: {}, stats: {}, questsDone: 0,
   started: today(), lastCheck: today(), day: null, rift: null
 });
 

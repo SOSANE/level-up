@@ -5,7 +5,7 @@ import { usePlayer } from '../api/player.jsx';
 import { BLOCKED_APPS } from '../api/data.js';
 import { lookOf, stageOf } from '../api/look.js';
 import MiniSelf from '../components/MiniSelf.jsx';
-import { RANK_COLOR, mmss } from '../api/game.js';
+import { RANK_COLOR, drinkPotion, mmss } from '../api/game.js';
 import SystemWindow from '../components/SystemWindow.jsx';
 
 function TrappedCharacter({ look, stage }) {
@@ -76,6 +76,11 @@ export default function Rift() {
       </div>
 
       <p className="soft" style={{ fontSize: 16, maxWidth: 560, lineHeight: 1.5 }}>Finish today’s quests so tomorrow’s banishment doesn’t grow by another hour.</p>
+      {!free && player.items.revival > 0 && (
+        <button className="btn-danger" style={{ alignSelf: "center" }} onClick={() => { update((p) => { drinkPotion(p, 'revival'); }); navigate('/dashboard'); }}>
+          Drink a Revival draught ({player.items.revival} left) and escape
+        </button>
+      )}
       {free
         ? <button className="btn btn-gold" onClick={leave}>Escape the Rift</button>
         : <button className="btn btn-light" onClick={() => navigate('/dashboard')}>Back to today’s quests</button>}

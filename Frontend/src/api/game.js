@@ -1,5 +1,5 @@
 // Game rules. Every function mutates the player object it is given (a fresh clone from usePlayer().update).
-import { CATEGORY, MATERIAL } from './data.js';
+import { CATEGORY, MATERIAL, POTIONS, RARE } from './data.js';
 
 export const RANKS = [['E', 1], ['D', 5], ['C', 10], ['B', 20], ['A', 35], ['S', 50]];
 export const RANK_COLOR = { S: '#F2B84B', A: '#FF5C74', B: '#0ECCED', C: '#4D8FE8', D: '#B9D3E2', E: '#87A4B5' };
@@ -58,9 +58,13 @@ export function completeQuest(p, id) {
   r.barTo = p.bars[id];
   p.materials[r.material.name] = (p.materials[r.material.name] || 0) + r.qty;
   p.questsDone++;
+  r.drops = RARE.filter((x) => x.every && p.questsDone % x.every === 0);
   p.stats = p.stats || {};
   p.stats[q.proof] = (p.stats[q.proof] || 0) + 1;
   r.stat = STAT_OF[q.proof];
+  p.buffs = p.buffs || {};
+  if (p.buffs.haste) { r.xp *= 2; r.boost = [...(r.boost || []), 'Tonic of haste: EXP ×2']; delete p.buffs.haste; }
+  if (p.buffs.fortune) { r.coins *= 2; r.boost = [...(r.boost || []), 'Potion of fortune: coins ×2']; delete p.buffs.fortune; }
   gain(p, r.xp, r.coins);
   if (!p.day.cleared && quests.slice(0, 4).every((x) => p.day.status[x.id] === 'done')) {
     p.day.cleared = true;
@@ -68,10 +72,32 @@ export function completeQuest(p, id) {
     r.xp += REWARD.clear.xp;
     r.coins += REWARD.clear.coins;
     r.cleared = true;
+    r.drops.push(...RARE.filter((x) => x.clear));
   }
+  r.drops.forEach((x) => { p.materials[x.name] = (p.materials[x.name] || 0) + 1; });
   p.history[today()] = p.day.cleared ? 'd' : 'p';
   r.levelTo = p.level;
   return r;
+}
+
+// Buy a potion from the marketplace. Returns false when the player can't afford it.
+export function buyPotion(p, id) {
+  const it = POTIONS.find((x) => x.id === id);
+  if (!it || p.coins < it.cost) return false;
+  p.coins -= it.cost;
+  p.items[id] = (p.items[id] || 0) + 1;
+  return true;
+}
+// Drink a potion from the inventory. Returns false when there's none, or it can't be used right now.
+export function drinkPotion(p, id) {
+  if (!p.items[id] || !POTIONS.find((x) => x.id === id)?.drink) return false;
+  p.buffs = p.buffs || {};
+  if (id === 'growth') gain(p, 100, 0);
+  else if (id === 'revival') { if (!p.rift) return false; p.rift = null; }
+  else if (p.buffs[id]) return false; // already active: don't waste a second one
+  else p.buffs[id] = true;
+  p.items[id]--;
+  return true;
 }
 
 // Banish the player to the Rift for `days` failed days in a row; records exactly what was lost.

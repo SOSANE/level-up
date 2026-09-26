@@ -1,21 +1,26 @@
 // Character card: portrait, level, rank, EXP, stats, coins and streak.
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PROOF_COLOR } from '../api/data.js';
 import { STAGES, lookOf, stageOf } from '../api/look.js';
 import { RANK_COLOR, rankOf, stats, streak } from '../api/game.js';
 import SystemWindow from './SystemWindow.jsx';
 import MiniSelf from './MiniSelf.jsx';
+import EvolutionTimeline from './EvolutionTimeline.jsx';
 import { Bar, CoinIcon } from './ui.jsx';
 
 export default function CharacterCard({ player }) {
   const look = lookOf(player);
   const stage = stageOf(player.level);
   const r = rankOf(player.level);
+  const dev = useRef(null);
   return (
     <SystemWindow title="CHARACTER CARD" icon={null} tone="violet">
       <div className="col" style={{ gap: 16 }}>
         <div className="portrait" style={{ '--c': look.outfit }}>
-          <MiniSelf look={look} stage={stage} size={170} crop="bust" title={`${player.name}, ${STAGES[stage].title}`} />
+          <button type="button" className="portrait-open" onClick={() => dev.current.showModal()} aria-label="Open character development" aria-haspopup="dialog">
+            <MiniSelf look={look} stage={stage} size={170} crop="bust" title={`${player.name}, ${STAGES[stage].title}`} />
+          </button>
           <Link to="/customize" className="portrait-edit" aria-label="Customize your character">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
           </Link>
@@ -58,6 +63,10 @@ export default function CharacterCard({ player }) {
           </div>
         </div>
       </div>
+      <dialog ref={dev} className="dev-dialog" aria-label="Character development" onClick={(e) => { if (e.target === dev.current) dev.current.close(); }}>
+        <EvolutionTimeline look={look} stage={stage} level={player.level} />
+        <button className="btn btn-light dev-close" onClick={() => dev.current.close()}>Close</button>
+      </dialog>
     </SystemWindow>
   );
 }

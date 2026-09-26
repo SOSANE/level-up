@@ -266,7 +266,7 @@ body {
 .evo-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px 12px; border-radius: var(--r-md);
   border: 1px solid var(--line); background: linear-gradient(180deg, var(--raised), var(--deep)); overflow: hidden; }
 .evo-card.current { border-color: var(--violet); box-shadow: 0 0 16px rgba(165, 107, 255, .35); }
-.evo-lv { font-family: var(--title); font-weight: 800; font-size: 20px; color: var(--fg); text-shadow: 0 2px 8px #000; margin-top: -6px; }
+.evo-lv { font-family: var(--title); font-weight: 800; font-size: 20px; color: var(--fg); text-shadow: 0 2px 8px #000; margin-top: 6px; }
 .evo-card.locked .evo-lv { color: var(--dim); }
 .evo-name { font-size: 12px; color: var(--muted); text-align: center; }
 .style-btn[role="radio"][aria-checked="true"] { border-color: var(--blue); background: var(--blue-tint); }
@@ -420,6 +420,20 @@ button.evo-card:hover { border-color: var(--line2); transform: translateY(-2px);
 .inv-slot > svg { filter: drop-shadow(0 0 6px var(--c, #fff)) drop-shadow(0 0 2px #fff); }
 .inv-slot.empty { border-color: rgba(165, 107, 255, .3); box-shadow: none; background: rgba(10, 6, 24, .6); }
 .inv-slot.empty > svg { opacity: .35; }
+button.inv-slot { cursor: pointer; font: inherit; color: inherit; transition: transform .15s, box-shadow .15s; }
+button.inv-slot:hover { transform: translateY(-2px); }
+button.inv-slot[aria-pressed="true"] { outline: 2px solid var(--c); outline-offset: 2px; }
+.inv-detail { margin: 12px 0 0; min-height: 40px; font-size: 13px; color: var(--muted); }
+.portrait-open { display: block; border-radius: var(--r-md); transition: transform .2s; }
+.portrait-open:hover { transform: translateY(-3px) scale(1.02); }
+.portrait-open:focus-visible { outline: 2px solid var(--c); outline-offset: 4px; }
+.inv-grid.wide { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.inv-grid.wide .inv-slot > svg { width: 26px; height: auto; max-height: 32px; }
+.portrait-open { background: none; border: 0; padding: 0; cursor: pointer; }
+.dev-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 0; background: transparent; color: inherit; overflow: auto; }
+.dev-dialog::backdrop { background: rgba(3, 6, 14, .78); backdrop-filter: blur(3px); }
+.dev-close { width: 100%; margin-top: 12px; }
+.inv-drink { margin-left: 10px; padding: 6px 14px; min-height: 32px; font-size: 13px; }
 .inv-count { position: absolute; left: 6px; bottom: 4px; font-family: var(--title); font-weight: 700; font-size: 14px; color: #fff; text-shadow: 0 0 6px var(--c, #A56BFF); }
 
 /* ---- NOTIFICATION / LEVEL UP popup ---- */

@@ -1,19 +1,13 @@
 import { usePlayer } from '../api/player.jsx';
-import { MATERIAL } from '../api/data.js';
-import { lookOf, stageOf } from '../api/look.js';
-import { today } from '../api/game.js';
+import { useState } from 'react';
+import { MATERIAL, POTIONS, RARE } from '../api/data.js';
+import { buyPotion, drinkPotion, today } from '../api/game.js';
 import CharacterCard from '../components/CharacterCard.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
-import EvolutionTimeline from '../components/EvolutionTimeline.jsx';
 import StatRadar from '../components/StatRadar.jsx';
-import { MaterialIcon, Potion } from '../components/ui.jsx';
+import { LootIcon, MaterialIcon, Potion } from '../components/ui.jsx';
 
-const SHOP = [
-  { id: 'freeze', name: 'Frost elixir', desc: 'Freezes your streak for one missed day', cost: 100, color: 'var(--blue)' },
-  { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150, color: 'var(--violet)' },
-  { id: 'outfit', name: 'Essence of style', desc: 'Unlocks 3 premium outfit colors', cost: 400, color: 'var(--sapphire-light)' }
-];
 const DAY_LOOK = {
   d: { bg: 'var(--blue)', ring: 'var(--blue)', fg: 'var(--on-accent)', label: 'All quests done' },
   p: { bg: 'var(--blue-deep)', ring: 'var(--blue-deep)', fg: 'var(--fg)', label: 'Some quests done' },
@@ -23,6 +17,7 @@ const DAY_LOOK = {
 
 export default function Profile() {
   const { player, update, reset } = usePlayer();
+  const [picked, setPicked] = useState(null);
 
   const now = new Date();
   const month = now.toLocaleDateString('en-US', { month: 'long' });
@@ -35,10 +30,9 @@ export default function Profile() {
     return { n: k + 1, ...DAY_LOOK[kind], label: `${key}: ${DAY_LOOK[kind].label}` };
   });
 
-  const look = lookOf(player);
-  const stage = stageOf(player.level);
-
-  const buy = (item) => update((p) => { p.coins -= item.cost; p.items[item.id] = (p.items[item.id] || 0) + 1; });
+  const buy = (item) => update((p) => { buyPotion(p, item.id); });
+  const drink = (id) => update((p) => { drinkPotion(p, id); });
+  const buffs = POTIONS.filter((it) => player.buffs?.[it.id]);
 
   return (
     <div className="page col" style={{ gap: 28 }}>
@@ -57,25 +51,42 @@ export default function Profile() {
         </SystemWindow>
 
         <SystemWindow title="INVENTORY" icon={null} tone="violet">
-          <div className="inv-grid">
-            {[
-              ...Object.values(MATERIAL).map((m) => ({ key: m.name, name: m.name, n: player.materials[m.name] || 0, icon: <MaterialIcon color="#F4F8FF" size={30} />, glow: m.color })),
-              ...SHOP.filter((it) => player.items[it.id]).map((it) => ({ key: it.id, name: it.name, n: player.items[it.id], icon: <Potion color={it.color} size={28} />, glow: it.color }))
-            ].concat(Array(12).fill(null)).slice(0, 12).map((slot, k) => (
-              slot
-                ? <div key={slot.key} className={`inv-slot${slot.n ? '' : ' empty'}`} style={{ '--c': slot.glow }} title={`${slot.name} × ${slot.n}`} aria-label={`${slot.name}: ${slot.n}`}>
-                    {slot.icon}{slot.n > 0 && <span className="inv-count">{slot.n}</span>}
-                  </div>
-                : <div key={`e${k}`} className="inv-slot empty" aria-hidden="true" />
-            ))}
-          </div>
-          <p className="sys-note" style={{ margin: '12px 0 0' }}>[Materials drop from quests · potions come from the marketplace]</p>
+          {(() => {
+            const MAT_DESC = { VITALS: 'Forged from sweat. Drops from Vitals quests.', PHOTO: 'Grows where proof is shown. Drops from Photo quests.', FOCUS: 'Condensed focus. Drops from Focus quests.', HONOR: 'A promise kept. Drops from Honor quests.' };
+            const items = [
+              ...Object.entries(MATERIAL).map(([k, m]) => ({ key: m.name, name: m.name, desc: MAT_DESC[k], glow: m.color, icon: <MaterialIcon color="#F4F8FF" size={30} /> })),
+              ...RARE.map((x) => ({ key: x.name, name: x.name, desc: x.desc, glow: x.color, icon: <LootIcon kind={x.kind} color={x.color} size={30} /> })),
+              ...POTIONS.map((it) => ({ key: it.id, name: it.name, desc: `${it.desc}. Buy it in the marketplace.`, glow: it.color, icon: <Potion color={it.color} size={22} />, potion: true, drink: it.drink }))
+            ].map((it) => ({ ...it, n: it.potion ? player.items[it.key] || 0 : player.materials[it.name] || 0 }));
+            const sel = items.find((it) => it.key === picked);
+            return (<>
+              <div className="inv-grid wide">
+                {items.concat(Array(24 - items.length).fill(null)).map((slot, k) => (
+                  slot
+                    ? <button key={slot.key} type="button" className={`inv-slot${slot.n ? '' : ' empty'}`} style={{ '--c': slot.glow }}
+                        aria-pressed={picked === slot.key} onClick={() => setPicked(picked === slot.key ? null : slot.key)} aria-label={`${slot.name}: ${slot.n}`}>
+                        {slot.icon}{slot.n > 0 && <span className="inv-count">{slot.n}</span>}
+                      </button>
+                    : <div key={`e${k}`} className="inv-slot empty" aria-hidden="true" />
+                ))}
+              </div>
+              <p className="inv-detail" aria-live="polite">
+                {sel ? <><b style={{ color: sel.glow }}>{sel.name} × {sel.n}</b> · {sel.desc}</> : 'Select an item to inspect it.'}
+                {sel?.drink && sel.key !== 'revival' && (
+                  <button className="btn btn-blue inv-drink" disabled={!sel.n || !!player.buffs?.[sel.key]} onClick={() => drink(sel.key)}>
+                    {player.buffs?.[sel.key] ? 'Active' : 'Drink'}
+                  </button>
+                )}
+              </p>
+              {buffs.length > 0 && <p className="sys-note" style={{ margin: '4px 0 0', color: 'var(--gold)' }}>[Active: {buffs.map((b) => b.name).join(' · ')} · works on your next quest]</p>}
+            </>);
+          })()}
+          <p className="sys-note" style={{ margin: '12px 0 0' }}>[Materials drop from quests · rare drops reward quest milestones and cleared days · potions come from the marketplace]</p>
         </SystemWindow>
 
       </div>
 
       <div className="col" style={{ flex: '1 1 520px', gap: 20 }}>
-        <EvolutionTimeline look={look} stage={stage} level={player.level} />
         <SystemWindow title={`${month.toUpperCase()} HISTORY`} icon={null}>
           <div className="row muted" style={{ gap: 14, fontSize: 12, justifyContent: 'center', marginBottom: 14 }}>
               <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ background: 'var(--blue)' }} />All 4</span>
@@ -91,9 +102,9 @@ export default function Profile() {
 
         <SystemWindow title="POTION MARKETPLACE" icon={null} tone="violet">
           <div className="col" style={{ gap: 14 }}>
-            <p className="sys-note">[Balance: <span className="gold">{player.coins} coins</span>]</p>
+            <p className="sys-note">[Balance: <span className="gold">{player.coins} coins</span> · potions you buy go to your inventory · drink them from there]</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
-              {SHOP.map((item) => (
+              {POTIONS.map((item) => (
                 <button key={item.id} className="potion-item" style={{ '--c': item.color }} disabled={player.coins < item.cost} onClick={() => buy(item)}>
                   <Potion color={item.color} />
                   <b>{item.name}</b>

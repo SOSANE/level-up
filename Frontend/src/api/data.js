@@ -47,5 +47,25 @@ export const MATERIAL = {
   HONOR: { name: 'Oath token', color: '#A56BFF' }
 };
 
+// Rare drops, kept in the same materials bag. `every`: drops on every Nth quest; `clear`: drops when the day is cleared.
+export const RARE = [
+  { name: 'Beast core', kind: 'core', color: '#FFB547', every: 5, desc: 'Pulses with a monster’s heat. Drops every 5th quest.' },
+  { name: 'Rune stone', kind: 'rune', color: '#4FD1C5', every: 10, desc: 'An ancient skill, sealed in stone. Drops every 10th quest.' },
+  { name: 'Gate key', kind: 'key', color: '#FFD166', every: 25, desc: 'Opens a gate no one else can see. Drops every 25th quest.' },
+  { name: 'Shadow essence', kind: 'essence', color: '#A56BFF', clear: true, desc: 'What remains of a fallen shadow. Drops when you clear the day.' },
+  { name: 'Demon fang', kind: 'fang', color: '#FF5C70', every: 50, desc: 'Torn from a demon castle’s guard. Drops every 50th quest.' },
+  { name: 'Monarch sigil', kind: 'sigil', color: '#E6E9FF', every: 100, desc: 'The mark of a ruler of shadows. Drops every 100th quest.' }
+];
+
+// Potion marketplace. `drink`: used from the inventory; otherwise it works on its own when needed.
+export const POTIONS = [
+  { id: 'freeze', name: 'Frost elixir', desc: 'Freezes your streak for one missed day', cost: 100, color: '#4FB8FF' },
+  { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150, color: '#A56BFF' },
+  { id: 'outfit', name: 'Essence of style', desc: 'Unlocks 3 premium outfit colors', cost: 400, color: '#7FB2FF' },
+  { id: 'growth', name: 'Elixir of growth', desc: 'Drink for +100 EXP right away', cost: 200, color: '#34D399', drink: true },
+  { id: 'haste', name: 'Tonic of haste', desc: 'Your next quest gives double EXP', cost: 220, color: '#FFB547', drink: true },
+  { id: 'fortune', name: 'Potion of fortune', desc: 'Your next quest gives double coins', cost: 180, color: '#FFD166', drink: true },
+  { id: 'revival', name: 'Revival draught', desc: 'Escape the Rift instantly (drink it there)', cost: 350, color: '#FF5C70', drink: true }
+];
 
 export const BLOCKED_APPS = ['Video', 'Social', 'Games', 'Streaming', 'Short clips'];

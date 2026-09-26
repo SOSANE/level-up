@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import SystemWindow from './SystemWindow.jsx';
 import { PROOF_COLOR } from '../api/data.js';
 import { STAT_OF } from '../api/game.js';
-import { Bar, CoinIcon, MaterialIcon } from './ui.jsx';
+import { Bar, CoinIcon, LootIcon, MaterialIcon } from './ui.jsx';
 
 // stat name -> its colour (Strength red, Intelligence blue, …)
 const STAT_COLOR = Object.fromEntries(Object.entries(STAT_OF).map(([proof, name]) => [name, PROOF_COLOR[proof]]));
@@ -51,6 +51,16 @@ export default function RewardPopup({ reward, onClose }) {
               <span className="muted" style={{ fontSize: 13 }}>Added to your inventory</span>
             </div>
           </div>
+          {reward.boost?.map((b) => <p key={b} className="sys-note" style={{ margin: 0, color: 'var(--gold)' }}>[{b}]</p>)}
+          {reward.drops?.map((x) => (
+            <div key={x.name} className="row drop-in reward-item" style={{ '--c': x.color }}>
+              <LootIcon kind={x.kind} color={x.color} size={38} />
+              <div className="col" style={{ gap: 2 }}>
+                <b>RARE DROP · 1× {x.name}</b>
+                <span className="muted" style={{ fontSize: 13 }}>{x.desc}</span>
+              </div>
+            </div>
+          ))}
           <div className="col" style={{ gap: 6 }}>
             <div className="row between" style={{ fontSize: 14 }}><span>{reward.category} path</span><span className="bracket">[{bar}/10]</span></div>
             <Bar pct={bar * 10} color="var(--blue)" h={8} label={`${reward.category} bar`} />
