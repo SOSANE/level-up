@@ -1,110 +1,102 @@
 // Run with: npm test
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { CATEGORY_LIST } from '../src/game/content.js';
 import {
-  questCoins, materialDrop, addExp, removeExp, rankForLevel, perfectDayExp,
-  applyPerfectDay, applyFailedDay, verifyVitals, awakeningStatus, lastLevelOfRank,
+  canAddQuest, completeQuest, dayResult, gain, nextRankLevel, questSlotsForDay, rankOf,
+  sendToRift, streak, verifyVitals,
 } from '../src/game/rules.js';
 
-const fresh = { level: 1, exp: 0, coins: 0, streak: 0, failedDaysInRow: 0 };
+const chosen = CATEGORY_LIST.slice(0, 10).map((c) => c.id);
+const player = () => ({
+  level: 1, xp: 0, coins: 50, chosen, bars: {}, materials: {}, stats: {}, items: {}, questsDone: 0,
+});
+const questFor = (slot) => ({ ...slot, proof: CATEGORY_LIST.find((c) => c.id === slot.category).proof });
 
-test('coins by difficulty, x1.5 when awakened', () => {
-  assert.equal(questCoins(1, false), 10);
-  assert.equal(questCoins(3, false), 30);
-  assert.equal(questCoins(2, true), 30);
+test('5 quests a day (4 required + bonus), extras up to the number of categories', () => {
+  const slots = questSlotsForDay(chosen, '2026-09-26');
+  assert.equal(slots.length, 5);
+  assert.deepEqual(slots.map((s) => s.kind), ['required', 'required', 'required', 'required', 'bonus']);
+  assert.equal(questSlotsForDay(chosen, '2026-09-26', 1)[5].kind, 'extra');
+  const all = questSlotsForDay(chosen, '2026-09-26', 50);
+  assert.equal(all.length, 10);
+  assert.equal(new Set(all.map((s) => s.category)).size, 10);
 });
 
-test('verified quests drop 2 materials', () => {
-  assert.equal(materialDrop(true), 2);
-  assert.equal(materialDrop(false), 1);
+test('quest rewards, stats, and the daily clear bonus', () => {
+  const p = player();
+  const slots = questSlotsForDay(chosen, '2026-09-26').map(questFor);
+  const r = completeQuest(p, slots[0], { requiredDoneAfter: false });
+  assert.deepEqual([r.coins, r.qty, r.barFrom, r.barTo], [10, 1, 0, 1]);
+  assert.equal(p.stats[slots[0].proof], 1);
+  slots.slice(1, 3).forEach((q) => completeQuest(p, q, { requiredDoneAfter: false }));
+  const last = completeQuest(p, slots[3], { requiredDoneAfter: true });
+  assert.ok(last.cleared);
+  assert.equal(p.coins, 50 + 40 + 25);
+  const bonus = completeQuest(p, slots[4], { requiredDoneAfter: true, alreadyCleared: true });
+  assert.equal(bonus.cleared, undefined);
+  assert.equal(bonus.qty, 2);
 });
 
-test('ranks follow level', () => {
-  assert.equal(rankForLevel(1), 'E');
-  assert.equal(rankForLevel(4), 'E');
-  assert.equal(rankForLevel(5), 'D');
-  assert.equal(rankForLevel(25), 'S');
-  assert.equal(lastLevelOfRank('E'), 4);
-  assert.equal(lastLevelOfRank('S'), null);
+test('level up needs 1000 EXP and every bar full', () => {
+  const p = player();
+  assert.equal(gain(p, 1200, 0), 0, 'bars not full');
+  chosen.forEach((id) => { p.bars[id] = 10; });
+  assert.equal(gain(p, 0, 0), 1);
+  assert.equal(p.xp, 200);
+  assert.ok(chosen.every((id) => p.bars[id] === 0), 'bars reset');
 });
 
-test('EXP carries over across level-ups', () => {
-  assert.deepEqual(addExp(1, 90, 60), { level: 2, exp: 50 });
-  assert.deepEqual(addExp(1, 0, 350), { level: 3, exp: 50 }); // 100 + 200 used, 50 left
+test('extra quest only once everything listed is done', () => {
+  const done = (n) => Array.from({ length: n }, () => ({ status: 'completed' }));
+  assert.equal(canAddQuest([...done(4), { status: 'pending' }], 10), false);
+  assert.equal(canAddQuest(done(5), 10), true);
+  assert.equal(canAddQuest(done(10), 10), false);
 });
 
-test('EXP loss comes out of the level below, floor at level 1', () => {
-  assert.deepEqual(removeExp(3, 20, 50), { level: 2, exp: 170 });
-  assert.deepEqual(removeExp(1, 30, 50), { level: 1, exp: 0 });
+test('day results', () => {
+  const q = (kind, status) => ({ kind, status });
+  assert.equal(dayResult([q('required', 'completed'), q('required', 'completed'), q('required', 'completed'), q('required', 'completed'), q('bonus', 'pending')]), 'cleared');
+  assert.equal(dayResult([q('required', 'completed'), q('required', 'pending')]), 'partial');
+  assert.equal(dayResult([q('required', 'pending')]), 'missed');
 });
 
-test('perfect-day bonus caps at +100', () => {
-  assert.equal(perfectDayExp(1), 60);
-  assert.equal(perfectDayExp(10), 150);
-  assert.equal(perfectDayExp(30), 150);
+test('Rift losses are exact and can drop level and rank', () => {
+  const p = { ...player(), level: 10, xp: 100, coins: 30 };
+  const rift = sendToRift(p, 2, { now: 0 });
+  assert.deepEqual(rift.lost, { xp: 300, coins: 30, levelFrom: 10, levelTo: 9, rankFrom: 'C', rankTo: 'D' });
+  assert.equal(p.xp, 800);
+  assert.equal(rift.until, 2 * 3600e3);
 });
 
-test('a player who never misses reaches rank D in about 10 days', () => {
-  let s = fresh;
-  let day = 0;
-  while (rankForLevel(s.level) === 'E') {
-    s = applyPerfectDay(s).state;
-    day++;
-  }
-  assert.equal(day, 10);
+test('a Ward potion cuts the banishment to 30 minutes and is used up', () => {
+  const p = { ...player(), items: { shield: 1 } };
+  const rift = sendToRift(p, 1, { hoursFor: 3, now: 0 });
+  assert.equal(rift.until, 0.5 * 3600e3);
+  assert.equal(p.items.shield, 0);
 });
 
-test('failed days banish longer and cost more', () => {
-  const start = { ...fresh, level: 3, exp: 20, coins: 101, streak: 5 };
-  const first = applyFailedDay(start);
-  assert.equal(first.summary.banishHours, 1);
-  assert.equal(first.summary.expLost, 50);
-  assert.equal(first.summary.coinsLost, 20);
-  assert.equal(first.state.coins, 81);
-  assert.equal(first.state.streak, 0);
-  assert.equal(first.state.level, 2);
-
-  const second = applyFailedDay(first.state);
-  assert.equal(second.summary.banishHours, 2);
-  assert.equal(second.summary.expLost, 75);
-
-  const recovered = applyPerfectDay(second.state);
-  assert.equal(recovered.state.failedDaysInRow, 0);
+test('streak counts cleared days, freezes bridge gaps', () => {
+  const history = { '2026-09-25': 'd', '2026-09-24': 'd', '2026-09-22': 'd' };
+  assert.equal(streak(history, { today: '2026-09-26', started: '2026-09-01' }), 2);
+  assert.equal(streak(history, { today: '2026-09-26', started: '2026-09-01', freezes: 1 }), 3);
+  assert.equal(streak({ ...history, '2026-09-26': 'd' }, { today: '2026-09-26', started: '2026-09-01' }), 3);
 });
 
-test('failed day can drop the rank', () => {
-  const r = applyFailedDay({ ...fresh, level: 5, exp: 10 });
-  assert.equal(r.summary.rankBefore, 'D');
-  assert.equal(r.summary.rankAfter, 'E');
+test('ranks', () => {
+  assert.equal(rankOf(1), 'E');
+  assert.equal(rankOf(50), 'S');
+  assert.equal(nextRankLevel(12), 20);
+  assert.equal(nextRankLevel(50), null);
 });
 
-test('vitals verification', () => {
-  assert.equal(verifyVitals('strength_training', { restingHr: 70, afterHr: 95 }).verified, true);
-  assert.equal(verifyVitals('strength_training', { restingHr: 70, afterHr: 75 }).verified, false);
-  assert.equal(verifyVitals('yoga', { breathingStart: 16, breathingEnd: 10 }).verified, true);
-  assert.equal(verifyVitals('studying', { focusScore: 0.5 }).verified, false);
-  assert.equal(verifyVitals('yoga', undefined).verified, false);
-});
-
-test('awakening needs full bars and 3 materials per category', () => {
-  const base = {
-    awakened: false,
-    categories: ['a', 'b'],
-    materialFor: (c) => `m_${c}`,
-  };
-  const notReady = awakeningStatus({
-    ...base,
-    bars: [{ category: 'a', count: 10, target: 10 }, { category: 'b', count: 9, target: 10 }],
-    materials: { m_a: 3, m_b: 1 },
-  });
-  assert.equal(notReady.ready, false);
-  assert.deepEqual(notReady.missingBars, ['b']);
-  assert.deepEqual(notReady.missingMaterials, { m_b: 2 });
-
-  const ready = awakeningStatus({
-    ...base,
-    bars: [{ category: 'a', count: 10, target: 10 }, { category: 'b', count: 10, target: 10 }],
-    materials: { m_a: 3, m_b: 5 },
-  });
-  assert.equal(ready.ready, true);
+test('vitals verification from stored readings', () => {
+  assert.equal(verifyVitals('strength', { samples: 900, startBpm: 72, peakBpm: 118, avgBpm: 104 }).verified, true);
+  assert.equal(verifyVitals('running', { samples: 600, startBpm: 72, peakBpm: 80, avgBpm: 76 }).verified, false);
+  assert.equal(verifyVitals('yoga', { samples: 600, startBreathing: 16, endBreathing: 9, startBpm: 80, avgBpm: 70 }).verified, true);
+  assert.equal(verifyVitals('yoga', { samples: 600, startBpm: 80, avgBpm: 70 }).verified, true);
+  assert.equal(verifyVitals('study', { samples: 900, avgFocus: 0.82 }).verified, true);
+  assert.equal(verifyVitals('study', { samples: 900, avgFocus: 0.4 }).verified, false);
+  assert.equal(verifyVitals('strength', { samples: 0 }).verified, false);
+  assert.equal(verifyVitals('strength', null).verified, false);
 });

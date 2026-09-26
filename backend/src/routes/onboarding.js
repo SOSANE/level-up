@@ -1,38 +1,34 @@
 import { Router } from 'express';
-import { CategoryProgress } from '../models/CategoryProgress.js';
-import { CATEGORY_IDS, CHARACTERS } from '../game/content.js';
-import { ensureQuestsForDay } from '../services/quests.js';
+import * as usersDb from '../db/users.js';
+import * as progressDb from '../db/progress.js';
+import { ensureQuestsForDay, questView } from '../services/quests.js';
 import { createChapter } from '../services/story.js';
 import { userView } from '../game/userView.js';
 import { httpError } from '../utils/http.js';
 import { todayStr } from '../utils/dates.js';
+import { cleanAnswers, cleanChosen, cleanLook } from './validate.js';
 
 const router = Router();
 
-// POST /api/onboarding  { categories: [...], characterId, displayName? }
+// POST /api/onboarding  { chosen: [...10+ category ids], look, name?, answers? }
 router.post('/', async (req, res) => {
-  const user = req.user;
-  if (user.onboarded) throw httpError(409, 'Already onboarded');
+  if (req.user.onboarded) throw httpError(409, 'Already onboarded');
+  const body = req.body || {};
+  const chosen = cleanChosen(body.chosen);
+  const today = todayStr();
 
-  const { categories, characterId, displayName } = req.body || {};
-  const unique = [...new Set(Array.isArray(categories) ? categories : [])];
-  const invalid = unique.filter((c) => !CATEGORY_IDS.includes(c));
-  if (invalid.length) throw httpError(400, `Unknown categories: ${invalid.join(', ')}`, { allowed: CATEGORY_IDS });
-  if (unique.length < 10) throw httpError(400, `Pick at least 10 categories (you picked ${unique.length})`);
-  if (!CHARACTERS[characterId]) throw httpError(400, 'Pick one of the starter characters', { allowed: Object.keys(CHARACTERS) });
-
-  user.categories = unique;
-  user.characterId = characterId;
-  if (displayName) user.displayName = String(displayName).slice(0, 40);
-  user.onboarded = true;
-  user.gameDate = todayStr();
-  await user.save();
-
-  await CategoryProgress.insertMany(unique.map((category) => ({ userId: user._id, category })));
-  const quests = await ensureQuestsForDay(user, user.gameDate);
+  const user = await usersDb.update(req.user.id, {
+    chosen,
+    look: cleanLook(body.look),
+    answers: cleanAnswers(body.answers ?? req.user.answers),
+    ...(body.name !== undefined && { name: String(body.name).trim().slice(0, 40) || 'Player' }),
+    onboarded: true, started: today, gameDate: today,
+  });
+  await progressDb.ensureRows(user.id, chosen);
+  const quests = await ensureQuestsForDay(user);
   const chapter = await createChapter(user, 'intro'); // the first awakening
 
-  res.status(201).json({ me: await userView(user), quests, chapter });
+  res.status(201).json({ me: await userView(user), quests: quests.map(questView), chapter });
 });
 
 export default router;

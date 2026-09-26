@@ -1,6 +1,8 @@
-// Game days are "YYYY-MM-DD" strings in the server's time zone (set TZ=America/Toronto on the server).
+// Game days are "YYYY-MM-DD" strings in APP_TIMEZONE (the same zone the daily summary view buckets by).
+import { config } from '../config.js';
+
 export function todayStr(date = new Date()) {
-  return date.toLocaleDateString('en-CA'); // en-CA formats as YYYY-MM-DD
+  return date.toLocaleDateString('en-CA', { timeZone: config.timezone }); // en-CA formats as YYYY-MM-DD
 }
 
 export function addDays(dateStr, n) {

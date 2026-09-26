@@ -1,91 +1,101 @@
-# Level Up: backend (Person 2)
+# Level Up: backend
 
-Node + Express 5 + MongoDB (Mongoose). This folder already covers every backend task in the team plan.
-Your job this weekend is to get it running, understand each piece, connect it to your teammates' work, and tune it.
+Node + Express 5 + **Tiger Data** (PostgreSQL + TimescaleDB) through plain SQL with `pg`.
+The game rules match the frontend (`frontend/src/api/game.js`): 30 categories, 4 proof types, 4 required quests + a bonus a day,
+1000 EXP per level with every bar full, the Rift, and the potion shop.
 
 ## Get it running (15 minutes)
 
-1. Install Node 20 or newer.
-2. `npm install`
-3. `cp .env.example .env` and fill in at least `MONGODB_URI`.
+1. Install Node 20 or newer, then `npm install`.
+2. Create a free service on [Tiger Cloud](https://console.cloud.timescale.com) (shared compute, 750 MB is plenty).
+   Copy its connection string into `.env` as `DATABASE_URL` (keep `?sslmode=require`): `cp .env.example .env`.
    For your first run, also set `AUTH_DISABLED=true` and `DEMO_MODE=true` so you can test without Auth0.
-4. `npm run dev` (restarts on every save). You should see "Connected to MongoDB" and "API on http://localhost:4000".
-5. `npm test` runs the game-math tests.
+3. `npm run db:check` confirms the service supports hypertables, continuous aggregates, and compression.
+4. `npm run db:schema` creates every table, view, and policy (safe to re-run).
+5. `npm run db:seed` (optional) adds a Rank S showcase player with 150 days of history and ~215k heart-rate readings,
+   then prints the numbers for the pitch. Use it with the header `x-dev-user: showcase`.
+6. `npm run dev`. You should see "Connected to Tiger Data" and "API on http://localhost:4000".
+7. `npm test` runs the game-math tests (no database). `npm run test:smoke` runs the whole loop against the database.
+
+No Tiger service yet? A local TimescaleDB works the same:
+`docker run -d --name tsdb -e POSTGRES_PASSWORD=test -p 55432:5432 timescale/timescaledb:latest-pg17`
+with `DATABASE_URL=postgres://postgres:test@localhost:55432/postgres`.
 
 With `AUTH_DISABLED=true`, every request acts as the user named in the `x-dev-user` header.
 Use a new name any time you want a fresh player. **Never set it to true on the Vultr server.**
 
-## Where each of your tasks lives
+## How the data is stored
 
-| Task in the plan | File(s) |
+| Table / view | Kind | What it holds |
+|---|---|---|
+| `users`, `category_progress`, `quests`, `story_chapters` | regular tables | profiles, bars, each day's quests, story |
+| `vitals_readings` | hypertable (7-day chunks) | one row per second of a VITALS/FOCUS quest: bpm, breathing, focus |
+| `player_events` | hypertable (30-day chunks) | quest completions, closed days, Rift losses, purchases, gate wins, level-ups |
+| `daily_player_stats` | continuous aggregate | per player per day: quests by proof, EXP, coins, day result (calendar + 30-day chart) |
+| `vitals_per_minute` | continuous aggregate | per quest per minute: avg/min/max bpm, breathing, focus (reward chart) |
+
+Policies: both views refresh on a schedule and include the newest rows in real time; readings compress after 3 days
+(about 92% smaller in the seeded demo), events after 30 days; raw readings are dropped after 90 days while
+`vitals_per_minute` keeps the history. Schema: `src/db/schema.sql`. Queries: `src/db/*.js`.
+
+## Where things live
+
+| Piece | File(s) |
 |---|---|
-| Express server, Atlas, Mongoose, dotenv/cors/helmet | `src/server.js`, `src/config.js`, `.env.example` |
-| API contract with mock JSON | The route files below; share the curl outputs as mock JSON |
-| Models: User, CategoryProgress, Quest, StoryChapter | `src/models/` |
-| Routes: me, onboarding, today's quests, start quest | `src/routes/me.js`, `onboarding.js`, `quests.js` |
+| Express app / server start | `src/app.js`, `src/server.js`, `src/config.js`, `.env.example` |
+| Connection pool, transactions | `src/db/pool.js` |
+| Game rules (pure, tested) | `src/game/rules.js`, `test/rules.test.js` |
+| Categories, materials, shop items | `src/game/content.js` (kept identical to `frontend/src/api/data.js`) |
+| Player JSON for the frontend | `src/game/userView.js` |
+| End of day (cron + demo) | `src/jobs/endOfDayJob.js`, `src/game/endOfDay.js` |
 | Auth0 middleware | `src/middleware/auth.js` |
-| Rewards on quest complete | `POST /:id/complete` in `src/routes/quests.js` |
-| End-of-day job with node-cron | `src/jobs/endOfDayJob.js`, `src/game/endOfDay.js` |
-| Photo uploads with multer | `src/routes/quests.js` (upload), `src/services/gemini.js` (verifyPhoto) |
-| POST /api/voice with caching | `src/routes/voice.js`, `src/services/voice.js` |
-| Second awakening route | `src/routes/awakening.js` |
-| Shop routes | `src/routes/shop.js` |
-| Plug in Gemini quests, verification, chapters | `src/services/gemini.js`, `quests.js`, `story.js` |
-| Demo-mode routes | `src/routes/demo.js` |
-| All the numbers (coins, EXP, ranks, losses) | `src/game/rules.js` (pure functions, tested in `test/`) |
-| Category, material, and character names | `src/game/content.js` |
+| Gemini quests, photo checks, chapters | `src/services/gemini.js`, `quests.js`, `story.js` |
+| ElevenLabs voice with caching | `src/routes/voice.js`, `src/services/voice.js` |
 
-## Try the whole game loop with curl
+## API
+
+| Route | What it does |
+|---|---|
+| `GET /api/me`, `PATCH /api/me` | player object; update `name`, `look`, `answers`, `chosen` |
+| `POST /api/onboarding` | `{ chosen: [10+ ids], look, name?, answers? }` |
+| `GET /api/quests/today`, `POST /api/quests/add` | today's quests; one extra once everything listed is done |
+| `POST /api/quests/:id/start` / `cancel` | run or give up the timer |
+| `POST /api/quests/:id/vitals` | `{ readings: [{ t, bpm?, breathingRate?, focusScore? }] }`, max 60 per batch, every ~5 s |
+| `GET /api/quests/:id/vitals` | per-minute series + summary for the reward chart |
+| `POST /api/quests/:id/complete` | PHOTO: multipart `photo`; VITALS/FOCUS: verified from stored readings; HONOR: no body |
+| `POST /api/rift/seen`, `POST /api/rift/leave` | Rift screen shown; leave once the timer is over |
+| `GET /api/shop`, `POST /api/shop/buy` | potions: `{ itemId: "freeze" \| "shield" \| "outfit" }` |
+| `POST /api/gate/reward` | arena win, Rank C+, once per game day |
+| `GET /api/stats?days=30`, `GET /api/stats/history?month=YYYY-MM` | from `daily_player_stats` |
+| `GET /api/stats/db` (public) | row counts, compression, query timings for the "Powered by Tiger Data" panel |
+| `GET /api/story` | chapters, newest first |
+| `POST /api/demo/next-day` / `add-exp` / `fill-bars` | demo mode only |
+
+## Try the game loop with curl
 
 ```bash
 API=http://localhost:4000/api
+H="x-dev-user: alice"
 
-# 1. Onboard (10+ categories, one starter)
-curl -s -X POST $API/onboarding -H "x-dev-user: alice" -H "Content-Type: application/json" -d '{
-  "displayName":"Alice","characterId":"starter1",
-  "categories":["hobbies","studying","socializing","reading","instrument","cooking",
-                "cleaning","organizing","working","strength_training","yoga"]}'
-
-# 2. Today's quests (copy one _id)
-curl -s $API/quests/today -H "x-dev-user: alice"
-
-# 3. Start and complete a quest
-curl -s -X POST $API/quests/QUEST_ID/start -H "x-dev-user: alice"
-curl -s -X POST $API/quests/QUEST_ID/complete -H "x-dev-user: alice"                         # self quest
-curl -s -X POST $API/quests/QUEST_ID/complete -H "x-dev-user: alice" -F "photo=@meal.jpg"     # photo quest
-curl -s -X POST $API/quests/QUEST_ID/complete -H "x-dev-user: alice" -H "Content-Type: application/json" \
-     -d '{"vitals":{"restingHr":70,"afterHr":96}}'                                              # presage quest
-
-# 4. Demo: fail a day (banished), then check /me for the losses and the Rift timer
-curl -s -X POST $API/demo/next-day -H "x-dev-user: alice" -H "Content-Type: application/json" -d '{"outcome":"fail"}'
-curl -s $API/me -H "x-dev-user: alice"
-
-# 5. Demo: rank-up
-curl -s -X POST $API/demo/add-exp -H "x-dev-user: alice"
-curl -s -X POST $API/demo/next-day -H "x-dev-user: alice" -H "Content-Type: application/json" -d '{"outcome":"perfect"}'
-
-# 6. Demo: second awakening
-curl -s -X POST $API/demo/fill-bars -H "x-dev-user: alice"
-# ...start and complete the one unfinished quest, then:
-curl -s -X POST $API/awakening -H "x-dev-user: alice"
-
-# 7. Story chapters (audioStatus "pending" -> poll again)
-curl -s $API/story -H "x-dev-user: alice"
+curl -s -X POST $API/onboarding -H "$H" -H "Content-Type: application/json" -d '{"name":"Alice",
+  "chosen":["strength","yoga","running","walk","reading","study","language","meditate","cooking","cleaning"]}'
+curl -s $API/quests/today -H "$H"                                   # copy a quest id
+curl -s -X POST $API/quests/QUEST_ID/start -H "$H"
+curl -s -X POST $API/quests/QUEST_ID/vitals -H "$H" -H "Content-Type: application/json" \
+     -d "{\"readings\":[{\"t\":$(date +%s000),\"bpm\":96}]}"        # VITALS quests
+curl -s -X POST $API/quests/QUEST_ID/complete -H "$H" -F "photo=@meal.jpg"   # PHOTO quests
+curl -s -X POST $API/quests/QUEST_ID/complete -H "$H"                        # everything else
+curl -s -X POST $API/demo/next-day -H "$H" -H "Content-Type: application/json" -d '{"outcome":"fail"}'
+curl -s "$API/stats?days=7" -H "$H"
 ```
 
-## Decisions made in the code (tell the team)
+## Decisions made in the code
 
-- **Game days** are `YYYY-MM-DD` strings stored as `user.gameDate`. The cron job and demo mode both close a day with the same `processDay()`, so demo behaviour matches the real thing. Set `TZ=America/Toronto` (or your zone) on the server so midnight is local midnight.
-- **Streak bonus** counts today: the first perfect day gives 60 EXP. With this, a perfect player hits rank D on day 10, matching the plan (there's a test for it).
-- **Unverified vitals** still complete the quest but drop 1 material instead of 2, so a Presage hiccup never costs the player their day.
-- **Rejected photos** return `422` with Gemini's reason and don't complete the quest; the player can retry. If Gemini itself errors, the photo is accepted without the bonus.
-- **Bars** stop at their target (never 11/10). The awakening uses up 3 materials per category and leaves bars full.
-- **Story audio** is generated in the background. Chapters come back with `audioStatus: "pending"`; the frontend polls `GET /api/story` until it's `ready`.
-- **Quest verification type** is decided by `content.js`, never by Gemini.
+- **Game days** are `YYYY-MM-DD` in `APP_TIMEZONE` (default America/Toronto), the same zone `daily_player_stats` buckets by. Changing it means re-running `db:schema` on a fresh database.
+- **One transaction per state change:** completing a quest locks the quest and the user, then updates coins, bars, the quest, and writes the event together, so a double click can't pay twice.
+- **Vitals are verified on the server** from the stored readings (heart-rate rise for workouts, slower breathing or heart rate for yoga, average focus for FOCUS). Unverified vitals still complete the quest, so a camera hiccup never costs the player their day.
+- **Rejected photos** return `422` with Gemini's reason and don't complete the quest; the player can retry. If Gemini itself errors, the photo is accepted without verification.
+- **The Rift:** a day without all 4 required quests costs 150 EXP and 25 coins and banishes for 1 hour (+1 hour per failed day in a row); a Ward potion cuts it to 30 minutes and is used up.
+- **Quest proof types, durations, and rewards** come from `content.js` and `rules.js`, never from Gemini (it only writes titles and descriptions).
 - **Timer check:** outside demo mode, completing before `endsAt` returns `409`.
-
-## Hand-offs
-
-- **Frontend:** send `Authorization: Bearer <token>` from `getAccessTokenSilently()`. Audio files are at `http://localhost:4000/audio/...` locally and `/audio/...` in production. Photos go as multipart field `photo`.
-- **Gemini teammate:** replace the prompts in `src/services/gemini.js` but keep the three function signatures. Put the story bible names into `src/game/content.js`. Multi-voice narration replaces the single `synthesize(...)` call in `src/services/story.js`.
-- **Testing & Presage teammate:** the companion app sends `{ vitals: {...} }` to the complete route (shapes in `verifyVitals` in `rules.js`). Unit tests are in `test/rules.test.js`. For production: `pm2 start src/server.js --name levelup-api`, and Nginx proxies `/api` and `/audio` to port 4000.
+- **Production:** `pm2 start src/server.js --name levelup-api`; Nginx proxies `/api` and `/audio` to port 4000.

@@ -4,7 +4,9 @@ import path from 'node:path';
 
 export const config = {
   port: Number(process.env.PORT || 4000),
-  mongoUri: process.env.MONGODB_URI,
+  databaseUrl: process.env.DATABASE_URL,
+  // Game days and the daily summary view are both bucketed in this zone. Changing it later means re-running db:schema.
+  timezone: process.env.APP_TIMEZONE || 'America/Toronto',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
 
   // DEMO_MODE turns on the /api/demo routes and skips the "wait for the timer" check.
@@ -30,7 +32,7 @@ export const config = {
 
 export function checkConfig() {
   const missing = [];
-  if (!config.mongoUri) missing.push('MONGODB_URI');
+  if (!config.databaseUrl) missing.push('DATABASE_URL');
   if (!config.authDisabled && (!config.auth0.domain || !config.auth0.audience)) {
     missing.push('AUTH0_DOMAIN / AUTH0_AUDIENCE (or set AUTH_DISABLED=true for local testing)');
   }
