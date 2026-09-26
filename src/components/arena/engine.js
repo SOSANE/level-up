@@ -22,7 +22,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
   const s = {
     time: 0, shake: 0, over: null, endT: 0, ended: false, keys: {},
     p: { x: 180, y: GROUND, vx: 0, vy: 0, face: 1, hp: maxHp, maxHp, mp: 60, state: 'idle', t: 0, hit: false,
-      dodgeCd: 0, inv: 0, flash: 0, combo: 0, comboT: 0, run: 0, name: fighter.name, color: fighter.color, dmg: fighter.dmg || 1, level: fighter.level || 1 },
+      dodgeCd: 0, inv: 0, flash: 0, combo: 0, comboT: 0, run: 0, name: fighter.name, color: fighter.color, skin: fighter.skin || '#F1C9A5', hair: fighter.hair || '#15161C', longHair: !!fighter.longHair, dmg: fighter.dmg || 1, level: fighter.level || 1 },
     b: { x: W - 200, y: GROUND, face: -1, hp: boss.hp, maxHp: boss.hp, state: 'idle', t: 0, next: 1.4, hit: false, thrown: 0,
       flash: 0, enraged: false, name: boss.name, color: boss.color },
     shots: [], waves: [], rocks: [], parts: [], texts: [], ghosts: []
@@ -403,7 +403,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     const blink = !ghost && p.inv > 0 && st !== 'dodge' && Math.floor(s.time * 20) % 2 === 0;
     ctx.globalAlpha = ghost ? f.life * 1.6 : blink ? 0.45 : 1;
     const red = !ghost && p.flash > 0;
-    const skin = red ? '#E0304F' : '#EDF4F9';
+    const skin = red ? '#E0304F' : p.skin;
     const suit = red ? '#E0304F' : '#1A2E52';
 
     // legs
@@ -429,6 +429,14 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     // head + visor
     ctx.fillStyle = skin;
     ctx.beginPath(); ctx.arc(3, -93, 11, 0, Math.PI * 2); ctx.fill();
+    // hair: long styles get a tail that sways as you move, then a spiky cap on top
+    if (p.longHair) {
+      ctx.fillStyle = red ? '#E0304F' : p.hair;
+      const sway = Math.sin(s.time * 5) * 3 - (st === 'run' ? 6 : 0);
+      ctx.beginPath(); ctx.moveTo(-8, -98); ctx.quadraticCurveTo(-16 + sway, -80, -12 + sway, -62); ctx.lineTo(-4, -70); ctx.quadraticCurveTo(-6, -84, 0, -96); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = red ? '#E0304F' : p.hair;
+    ctx.beginPath(); ctx.moveTo(-9, -88); ctx.quadraticCurveTo(-11, -108, 4, -106); ctx.lineTo(8, -110); ctx.lineTo(10, -104); ctx.lineTo(15, -103); ctx.quadraticCurveTo(12, -97, 6, -99); ctx.quadraticCurveTo(-2, -99, -5, -90); ctx.closePath(); ctx.fill();
     ctx.fillStyle = red ? '#340A13' : f.color;
     ctx.fillRect(6, -96, 8, 3);
 

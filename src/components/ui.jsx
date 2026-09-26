@@ -18,16 +18,6 @@ export function RankBadge({ level, size = 72 }) {
   );
 }
 
-export function Avatar({ color = 'var(--gold)', size = 64, locked = false }) {
-  const fill = locked ? 'var(--line2)' : color;
-  return (
-    <svg width={size} height={size * 1.1} viewBox="0 0 40 44" aria-hidden="true">
-      <circle cx="20" cy="12" r="8" fill={fill} />
-      <path d="M6 44 L10 26 Q20 20 30 26 L34 44 Z" fill={fill} />
-    </svg>
-  );
-}
-
 export function MaterialIcon({ color, size = 28 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">

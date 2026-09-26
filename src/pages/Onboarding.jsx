@@ -1,17 +1,20 @@
-// Pick at least 10 categories, then a starter character.
+// Pick at least 10 categories, then create your mini self.
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
-import { CATEGORIES, CHARACTERS, MIN_CATEGORIES, PROOF_COLOR, PROOF_LABEL } from '../api/data.js';
+import { CATEGORIES, MIN_CATEGORIES, PROOF_COLOR, PROOF_LABEL } from '../api/data.js';
+import { lookOf } from '../api/look.js';
 import { today } from '../api/game.js';
-import { Avatar, Bar } from '../components/ui.jsx';
+import AvatarBuilder from '../components/AvatarBuilder.jsx';
+import SystemWindow from '../components/SystemWindow.jsx';
+import { Bar } from '../components/ui.jsx';
 
 export default function Onboarding() {
   const { player, update } = usePlayer();
   const navigate = useNavigate();
   const [step, setStep] = useState('categories');
   const [chosen, setChosen] = useState(player.chosen);
-  const [character, setCharacter] = useState(player.character);
+  const [look, setLook] = useState(lookOf(player));
   const n = chosen.length;
   const ready = n >= MIN_CATEGORIES;
 
@@ -20,7 +23,7 @@ export default function Onboarding() {
   function finish() {
     update((p) => {
       p.chosen = chosen;
-      p.character = character;
+      p.look = look;
       if (!p.onboarded) { p.onboarded = true; p.started = today(); p.lastCheck = today(); }
     });
     navigate('/dashboard');
@@ -70,27 +73,15 @@ export default function Onboarding() {
       ) : (
         <>
           <div className="col" style={{ gap: 8 }}>
-            <h1 className="page-title">Choose your starter character</h1>
-            <p className="soft" style={{ fontSize: 16 }}>More characters unlock as you level up.</p>
+            <h1 className="page-title">Create your mini self</h1>
+            <p className="soft" style={{ fontSize: 16 }}>This is you in the game. Make it look like you — it evolves as you rank up.</p>
           </div>
-          <div role="radiogroup" aria-label="Starter character" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-            {CHARACTERS.map((c) => {
-              const on = character === c.id;
-              return (
-                <button key={c.id} role="radio" aria-checked={on} onClick={() => setCharacter(c.id)} className="card col"
-                  style={{ gap: 16, padding: 24, textAlign: 'left', borderColor: on ? c.color : undefined, background: on ? 'var(--raised)' : undefined }}>
-                  <div style={{ height: 140, borderRadius: 'var(--r-md)', background: 'var(--deep)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Avatar color={c.color} size={90} />
-                  </div>
-                  <span className="display" style={{ fontSize: 22, color: on ? c.color : undefined }}>{c.name}</span>
-                  <span className="soft" style={{ fontSize: 15, lineHeight: 1.5 }}>{c.intro}</span>
-                </button>
-              );
-            })}
-          </div>
+          <SystemWindow title="CHARACTER CREATION" tone="crimson" icon={null}>
+            <AvatarBuilder look={look} onChange={setLook} level={player.level} premium={(player.items.outfit || 0) > 0} />
+          </SystemWindow>
           <div className="row between">
             <button className="btn btn-ghost" onClick={() => setStep('categories')}>Back</button>
-            <button className="btn btn-gold" disabled={!character} onClick={finish}>Begin my awakening</button>
+            <button className="btn btn-gold" onClick={finish}>Begin my awakening</button>
           </div>
         </>
       )}

@@ -1,21 +1,28 @@
 // Character card: portrait, level, rank, EXP, stats, coins and streak.
-import { CHARACTER, PROOF_COLOR } from '../api/data.js';
+import { Link } from 'react-router-dom';
+import { PROOF_COLOR } from '../api/data.js';
+import { STAGES, lookOf, stageOf } from '../api/look.js';
 import { RANK_COLOR, rankOf, stats, streak } from '../api/game.js';
 import SystemWindow from './SystemWindow.jsx';
-import { Avatar, Bar, CoinIcon } from './ui.jsx';
+import MiniSelf from './MiniSelf.jsx';
+import { Bar, CoinIcon } from './ui.jsx';
 
 export default function CharacterCard({ player }) {
-  const ch = CHARACTER[player.character] || CHARACTER.rookie;
+  const look = lookOf(player);
+  const stage = stageOf(player.level);
   const r = rankOf(player.level);
   return (
     <SystemWindow title="CHARACTER CARD" icon={null} tone="crimson">
       <div className="col" style={{ gap: 16 }}>
-        <div className="portrait" style={{ '--c': ch.color }}>
-          <Avatar color={ch.color} size={92} />
+        <div className="portrait" style={{ '--c': look.outfit }}>
+          <MiniSelf look={look} stage={stage} size={170} crop="bust" title={`${player.name}, ${STAGES[stage].title}`} />
+          <Link to="/customize" className="portrait-edit" aria-label="Customize your character">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+          </Link>
           <span className="portrait-rank" style={{ color: RANK_COLOR[r], borderColor: RANK_COLOR[r] }} aria-label={`Rank ${r}`}>{r}</span>
           <div className="col" style={{ alignItems: 'center', gap: 2 }}>
             <span className="display" style={{ fontSize: 20 }}>{player.name}</span>
-            <span className="muted" style={{ fontSize: 13 }}>{ch.name}</span>
+            <span className="muted" style={{ fontSize: 13 }}>{STAGES[stage].title}</span>
           </div>
         </div>
         <div className="col" style={{ gap: 8 }}>

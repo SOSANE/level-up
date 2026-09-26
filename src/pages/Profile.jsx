@@ -1,16 +1,18 @@
 import { usePlayer } from '../api/player.jsx';
-import { CHARACTERS, MATERIAL } from '../api/data.js';
+import { Link } from 'react-router-dom';
+import { MATERIAL } from '../api/data.js';
+import { STAGES, lookOf, stageOf } from '../api/look.js';
 import { today } from '../api/game.js';
 import CharacterCard from '../components/CharacterCard.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
-import { Avatar, MaterialIcon, Potion } from '../components/ui.jsx';
+import MiniSelf from '../components/MiniSelf.jsx';
+import { MaterialIcon, Potion } from '../components/ui.jsx';
 
-const UNLOCKS = [['The Ironbound', 3], ['The Wayfarer', 4], ['The Vanguard', 5], ['The Ascendant', 10]];
 const SHOP = [
   { id: 'freeze', name: 'Frost elixir', desc: 'Freezes your streak for one missed day', cost: 100, color: 'var(--blue)' },
   { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150, color: 'var(--crimson)' },
-  { id: 'outfit', name: 'Essence of style', desc: 'A new outfit for your character', cost: 400, color: 'var(--sapphire-light)' }
+  { id: 'outfit', name: 'Essence of style', desc: 'Unlocks 3 premium outfit colors', cost: 400, color: 'var(--sapphire-light)' }
 ];
 const DAY_LOOK = {
   d: { bg: 'var(--blue)', ring: 'var(--blue)', fg: 'var(--on-accent)', label: 'All quests done' },
@@ -33,10 +35,8 @@ export default function Profile() {
     return { n: k + 1, ...DAY_LOOK[kind], label: `${key}: ${DAY_LOOK[kind].label}` };
   });
 
-  const characters = [
-    ...CHARACTERS.map((c) => ({ name: c.name, color: c.color, sub: c.id === player.character ? 'Your starter' : 'Starter', open: c.id === player.character })),
-    ...UNLOCKS.map(([name, lv]) => ({ name, color: 'var(--gold)', sub: player.level >= lv ? 'Unlocked' : `Level ${lv}`, open: player.level >= lv }))
-  ];
+  const look = lookOf(player);
+  const stage = stageOf(player.level);
 
   const buy = (item) => update((p) => { p.coins -= item.cost; p.items[item.id] = (p.items[item.id] || 0) + 1; });
 
@@ -61,23 +61,27 @@ export default function Profile() {
           </div>
         </SystemWindow>
 
-        <SystemWindow title="CHARACTERS" icon={null} tone="crimson">
-          <p className="sys-note">[{characters.filter((c) => c.open).length} of {characters.length} unlocked]</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 10 }}>
-            {characters.map((c) => (
-              <div key={c.name} className="col between" style={{ height: 118, padding: 12, borderRadius: 'var(--r-md)', border: `1px solid ${c.open ? c.color : 'var(--line)'}`, background: 'var(--deep)', gap: 0 }}>
-                <Avatar color={c.color} size={40} locked={!c.open} />
-                <div className="col" style={{ gap: 2 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: c.open ? 'var(--fg)' : 'var(--dim)' }}>{c.open ? c.name : 'Locked'}</span>
-                  <span className="muted" style={{ fontSize: 12 }}>{c.sub}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </SystemWindow>
       </div>
 
       <div className="col" style={{ flex: '1 1 520px', gap: 20 }}>
+        <SystemWindow title="CHARACTER DEVELOPMENT" icon={null} tone="crimson">
+          <p className="sys-note">[Stage {stage + 1} of {STAGES.length} · {STAGES[stage].title}. Rank up to evolve.]</p>
+          <div className="evo-grid">
+            {STAGES.map((s, k) => {
+              const open = k <= stage;
+              return (
+                <div key={s.rank} className={`evo-card${k === stage ? ' current' : ''}${open ? '' : ' locked'}`}>
+                  <MiniSelf look={look} stage={k} size={130} locked={!open} title={open ? `${s.title}, Level ${s.lv}` : undefined} />
+                  <span className="evo-lv">Lv.{s.lv}</span>
+                  <span className="evo-name">{open ? s.title : `Rank ${s.rank}`}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="row" style={{ justifyContent: 'center', marginTop: 16 }}>
+            <Link className="btn btn-ghost" to="/customize">Customize your look</Link>
+          </div>
+        </SystemWindow>
         <SystemWindow title={`${month.toUpperCase()} HISTORY`} icon={null}>
           <div className="row muted" style={{ gap: 14, fontSize: 12, justifyContent: 'center', marginBottom: 14 }}>
               <span className="row" style={{ gap: 5 }}><span className="swatch" style={{ background: 'var(--blue)' }} />All 4</span>

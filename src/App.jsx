@@ -9,6 +9,7 @@ import QuestTimer from './pages/QuestTimer.jsx';
 import Rift from './pages/Rift.jsx';
 import Gate from './pages/Gate.jsx';
 import Profile from './pages/Profile.jsx';
+import Customize from './pages/Customize.jsx';
 
 // Everything past onboarding needs a player with 10+ categories and a character.
 function RequirePlayer() {
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/gate" element={<Gate />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/customize" element={<Customize />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

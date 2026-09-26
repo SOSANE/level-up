@@ -47,11 +47,5 @@ export const MATERIAL = {
   HONOR: { name: 'Oath token', color: '#4D8FE8' }
 };
 
-export const CHARACTERS = [
-  { id: 'rookie', name: 'The Rookie', color: '#0ECCED', intro: 'Starts from zero and owns it. No talent, no excuses — just shows up again tomorrow.' },
-  { id: 'striver', name: 'The Striver', color: '#FF5C74', intro: 'Loud, stubborn, relentless. Would rather fail trying than wait for the perfect day.' },
-  { id: 'scholar', name: 'The Scholar', color: '#B9D3E2', intro: 'Sharp mind, messy routine. Wins through focus, one quiet block at a time.' }
-];
-export const CHARACTER = Object.fromEntries(CHARACTERS.map((c) => [c.id, c]));
 
 export const BLOCKED_APPS = ['Video', 'Social', 'Games', 'Streaming', 'Short clips'];

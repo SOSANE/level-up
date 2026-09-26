@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
-import { CHARACTER } from '../api/data.js';
+import { lookOf } from '../api/look.js';
 import { RANKS, RANK_COLOR, gain, rankOf } from '../api/game.js';
 import Arena from '../components/arena/Arena.jsx';
 import PageHeader from '../components/PageHeader.jsx';
@@ -15,6 +15,8 @@ const GATES = [
 ];
 const PLAY_BOSS = { name: 'Quarry Warden', hp: 400, color: '#E0304F' };
 const REWARD = { xp: 40, coins: 30 };
+// Canvas colours for the fighter: cape = outfit, plus skin and hair.
+const arenaLook = (l) => ({ color: l.outfit === '#25435D' ? '#4C6C81' : l.outfit, skin: l.skin, hair: l.hair, longHair: ['long', 'bob', 'ponytail', 'twintails'].includes(l.hairStyle) });
 
 function Log({ title, lines }) {
   return (
@@ -55,8 +57,8 @@ export default function Gate() {
   const runner = useMemo(() => ({ name: g.runner, color: RANK_COLOR[g.runnerRank], level: g.runnerLv, maxHp: 100 + g.runnerLv * 2, dmg: 0.55 + g.runnerLv / 60 }), [g]);
   const gateBoss = useMemo(() => ({ name: g.boss, hp: g.bossHp, color: g.color }), [g]);
   const me = useMemo(() => ({
-    name: player.name, color: (CHARACTER[player.character] || CHARACTER.rookie).color, level: player.level, maxHp: 100, dmg: 1 + (player.level - 1) * 0.05
-  }), [player.name, player.character, player.level]);
+    name: player.name, ...arenaLook(lookOf(player)), level: player.level, maxHp: 100, dmg: 1 + (player.level - 1) * 0.05
+  }), [player]);
 
   function endFight(r) {
     setResult(r);
