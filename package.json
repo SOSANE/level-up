@@ -1,0 +1,12 @@
+{
+  "name": "second-awakening-root",
+  "private": true,
+  "description": "Runs the app in ./Frontend from the repo root.",
+  "scripts": {
+    "setup": "npm --prefix Frontend install",
+    "dev": "npm --prefix Frontend run dev",
+    "build": "npm --prefix Frontend run build",
+    "preview": "npm --prefix Frontend run preview",
+    "test": "npm --prefix Frontend test"
+  }
+}
