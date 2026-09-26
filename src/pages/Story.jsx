@@ -37,7 +37,7 @@ export default function Story() {
       <main className="row wrap story-pad" style={{ flexGrow: 1, gap: 48 }}>
         <div className="col" style={{ flex: '1 1 520px', maxWidth: 640, gap: 28 }}>
           <div className="row mono" style={{ gap: 10, fontSize: 13, color: s.color }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />JINHO · NARRATOR
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color }} />JINWOO · NARRATOR
           </div>
           <h1 className="display" style={{ fontSize: 'clamp(40px, 6vw, 64px)', lineHeight: 1.05 }} aria-live="polite">{s.title}</h1>
           <p className="soft" style={{ fontSize: 22, lineHeight: 1.55, maxWidth: 580 }}>{s.body}</p>
@@ -51,7 +51,7 @@ export default function Story() {
             <div className={`wave${muted ? ' muted' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4, height: 36 }} aria-hidden="true">
               {HS.map((h, k) => <span key={k} style={{ height: h, animationDelay: `${(k * 0.07).toFixed(2)}s`, background: s.color }} />)}
             </div>
-            <span className="mono muted" style={{ letterSpacing: '.06em' }}>{muted ? 'VOICE OFF' : 'JINHO IS SPEAKING'}</span>
+            <span className="mono muted" style={{ letterSpacing: '.06em' }}>{muted ? 'VOICE OFF' : 'JINWOO IS SPEAKING'}</span>
           </div>
         </div>
         <div className="col" style={{ flex: '1 1 360px', alignItems: 'center', gap: 24 }}>
