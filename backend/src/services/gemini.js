@@ -7,14 +7,32 @@ import { config } from '../config.js';
 const ai = config.gemini.apiKey ? new GoogleGenAI({ apiKey: config.gemini.apiKey }) : null;
 export const geminiEnabled = Boolean(ai);
 
+// Busy (503) and rate-limited (429) answers are common and short-lived: retry, then try the fallback model.
+const RETRY_DELAYS_MS = [1000, 3000];
+const busy = (err) => err?.status === 429 || err?.status === 503;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function askJson(contents, schema) {
   if (!ai) throw new Error('Gemini is not configured');
-  const res = await ai.models.generateContent({
-    model: config.gemini.model,
-    contents,
-    config: { responseMimeType: 'application/json', responseJsonSchema: schema },
-  });
-  return JSON.parse(res.text);
+  const models = [...new Set([config.gemini.model, config.gemini.fallbackModel].filter(Boolean))];
+  let lastErr;
+  for (const model of models) {
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      try {
+        const res = await ai.models.generateContent({
+          model,
+          contents,
+          config: { responseMimeType: 'application/json', responseJsonSchema: schema },
+        });
+        return JSON.parse(res.text);
+      } catch (err) {
+        if (!busy(err)) throw err;
+        lastErr = err;
+        if (attempt < RETRY_DELAYS_MS.length) await sleep(RETRY_DELAYS_MS[attempt]);
+      }
+    }
+  }
+  throw lastErr;
 }
 
 const PROOF_HINT = {

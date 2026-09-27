@@ -20,7 +20,9 @@ export const config = {
   },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY,
-    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+    model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+    // Tried when the main model stays busy after retries. Empty = no fallback model.
+    fallbackModel: process.env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.5-flash',
   },
   elevenlabs: {
     apiKey: process.env.ELEVENLABS_API_KEY,
