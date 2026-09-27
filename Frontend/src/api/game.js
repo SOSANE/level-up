@@ -80,6 +80,14 @@ export function completeQuest(p, id) {
   return r;
 }
 
+// Arena win reward, once per day (same rule as the backend's POST /api/gate/reward). Returns false if already claimed.
+export function claimGateReward(p, xp, coins) {
+  if (p.gateWonOn === today()) return false;
+  p.gateWonOn = today();
+  gain(p, xp, coins);
+  return true;
+}
+
 // Buy a potion from the marketplace. Returns false when the player can't afford it.
 export function buyPotion(p, id) {
   const it = POTIONS.find((x) => x.id === id);
@@ -113,6 +121,14 @@ export function sendToRift(p, days = 1) {
     until: Date.now() + hours * 3600e3, days, seen: false,
     lost: { xp: before.total - totalXp(p), coins: before.coins - p.coins, levelFrom: before.level, levelTo: p.level, rankFrom: before.rank, rankTo: rankOf(p.level) }
   };
+}
+
+// Starts a new game day if the date changed (on load, and when a tab stays open past midnight). Returns true if it did.
+export function startDay(p) {
+  const fresh = !p.day || p.day.date !== today();
+  if (fresh) p.day = { date: today(), status: {}, cleared: false };
+  checkMissedDays(p);
+  return fresh;
 }
 
 // On load: any day since the last check without all 4 required quests counts as failed.

@@ -42,6 +42,14 @@ try {
 
   const strength = onboard.quests.find((q) => q.category === 'strength');
   assert.equal(strength.kind, 'required');
+  // A first attempt that was given up: its high, flat heart rate must not count toward the retry.
+  await call('POST', `/quests/${strength.id}/start`);
+  await pool.query(`UPDATE quests SET started_at = now() - interval '25 minutes', ends_at = now() - interval '15 minutes' WHERE id = $1`, [strength.id]);
+  const gaveUpAt = Date.now() - 25 * 60e3;
+  await call('POST', `/quests/${strength.id}/vitals`, { readings: Array.from({ length: 60 }, (_, i) => ({ t: gaveUpAt + i * 1000, bpm: 150 })) });
+  await call('POST', `/quests/${strength.id}/cancel`);
+  step('gave up a first attempt after uploading readings');
+
   await call('POST', `/quests/${strength.id}/start`);
   // Pretend the 10-minute session already happened, so readings fall inside the quest window.
   await pool.query(`UPDATE quests SET started_at = now() - interval '10 minutes', ends_at = now() WHERE id = $1`, [strength.id]);
@@ -63,7 +71,8 @@ try {
   step(`strength quest verified from stored readings (${done.reward.reason})`);
 
   const vitals = await call('GET', `/quests/${strength.id}/vitals`);
-  assert.ok(vitals.series.length >= 10, `${vitals.series.length} minutes`);
+  assert.ok(vitals.series.length >= 10 && vitals.series.length <= 11, `${vitals.series.length} minutes (this attempt only)`);
+  assert.ok(vitals.summary.startBpm < 100, 'start is from this attempt, not the one given up');
   assert.ok(vitals.summary.peakBpm > vitals.summary.startBpm + 15);
   step(`vitals_per_minute returns ${vitals.series.length} minutes`);
 

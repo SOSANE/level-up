@@ -106,8 +106,8 @@ router.get('/:id/vitals', async (req, res) => {
   const quest = await questsDb.findOwn(req.user.id, req.params.id);
   if (!quest) throw httpError(404, 'Quest not found');
   const [series, summary] = await Promise.all([
-    vitalsDb.perMinute(req.user.id, quest.id),
-    vitalsDb.summary(req.user.id, quest.id),
+    vitalsDb.perMinute(req.user.id, quest.id, quest.startedAt),
+    vitalsDb.summary(req.user.id, quest.id, quest.startedAt),
   ]);
   res.json({ questId: String(quest.id), proof: quest.proof, series, summary });
 });
@@ -147,7 +147,7 @@ router.post('/:id/complete', upload.single('photo'), async (req, res) => {
       proofResult = { verified: true, reason: 'Photo received (Gemini not configured, auto-approved).', attempts };
     }
   } else if (quest.proof === 'VITALS' || quest.proof === 'FOCUS') {
-    const summary = await vitalsDb.summary(user.id, quest.id);
+    const summary = await vitalsDb.summary(user.id, quest.id, quest.startedAt);
     proofResult = { ...verifyVitals(quest.category, summary), summary };
     // Not verified still completes the quest, so a camera hiccup never costs the player their day.
   } else {
