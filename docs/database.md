@@ -55,8 +55,9 @@ erDiagram
     bigint user_id FK
     date date "UNIQUE with user_id, category"
     text category
-    text kind "required, bonus, extra"
+    text kind "required, extra (bonus: older days only)"
     int position
+    text difficulty "hard, medium, medium-easy, easy (required quests)"
     text title
     text description
     int duration_minutes

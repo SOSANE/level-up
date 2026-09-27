@@ -19,14 +19,24 @@ async function request(path, { method = 'GET', body } = {}) {
 }
 
 export const api = {
+  onboard: (body) => request('/api/onboarding', { method: 'POST', body }),
+  updateMe: (body) => request('/api/me', { method: 'PATCH', body }),
   todaysQuests: () => request('/api/quests/today'),
   startQuest: (id) => request(`/api/quests/${id}/start`, { method: 'POST' }),
+  cancelQuest: (id) => request(`/api/quests/${id}/cancel`, { method: 'POST' }),
   uploadVitals: (id, readings) => request(`/api/quests/${id}/vitals`, { method: 'POST', body: { readings } }),
   questVitals: (id) => request(`/api/quests/${id}/vitals`),
   stats: (days = 30) => request(`/api/stats?days=${days}`),
   history: (month) => request(`/api/stats/history?month=${month}`),
   dbStats: () => request('/api/stats/db'),
 };
+
+// "Give up": put the server quest back to pending, so the next try starts a fresh server timer.
+export async function cancelServerQuest(serverQuestId) {
+  const id = await serverQuestId;
+  if (!id) return;
+  await api.cancelQuest(id).catch((err) => console.warn('Could not cancel the server quest:', err.message));
+}
 
 // The server quest for today's category, started so vitals can be attached to it. null if unavailable.
 export async function startServerQuest(categoryId) {

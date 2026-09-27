@@ -36,21 +36,23 @@ const MAX_PENDING = 600; // ten minutes offline, then the oldest readings are dr
 export function createVitalsRecorder(serverQuestId) {
   const all = [];
   let pending = [];
-  let sending = false;
+  let inflight = null;
 
-  async function flush() {
+  async function send() {
     const id = await serverQuestId;
-    if (!id || sending || !pending.length) return;
-    sending = true;
+    if (!id || !pending.length) return;
     const batch = pending.splice(0, BATCH);
     try {
       await api.uploadVitals(id, batch);
     } catch (err) {
       pending = [...batch, ...pending].slice(-MAX_PENDING);
       console.warn('Vitals upload failed, will retry:', err.message);
-    } finally {
-      sending = false;
     }
+  }
+  // One upload at a time; a flush during an upload waits for that one instead of returning early.
+  function flush() {
+    inflight ||= send().finally(() => { inflight = null; });
+    return inflight;
   }
   const timer = setInterval(flush, FLUSH_MS);
 
@@ -65,7 +67,10 @@ export function createVitalsRecorder(serverQuestId) {
     // Sends what is left; resolves to the server quest id (or null when everything stayed local).
     async finish() {
       clearInterval(timer);
-      for (let tries = 0; pending.length && tries < 3 + pending.length / BATCH; tries++) await flush();
+      if (!(await serverQuestId)) return null;
+      const maxTries = 3 + Math.ceil(pending.length / BATCH);
+      await inflight; // an interval upload may still be running (and may put its batch back if it fails)
+      for (let tries = 0; pending.length && tries < maxTries; tries++) await flush();
       return serverQuestId;
     },
   };

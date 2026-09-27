@@ -1,7 +1,7 @@
 // Player state: one object in localStorage, shared through context (context lives in playerContext.js).
 // A judge demo swaps in a Rank S showcase player under its own key; the real save is untouched.
-import { useCallback, useContext, useRef, useState } from 'react';
-import { checkMissedDays, today } from './game.js';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { startDay, today } from './game.js';
 import { showcasePlayer } from './demo.js';
 import { PlayerContext as Ctx } from './playerContext.js';
 
@@ -24,8 +24,7 @@ function write(key, value) {
 
 function load() {
   const p = { ...fresh(), ...read(KEY) };
-  if (!p.day || p.day.date !== today()) p.day = { date: today(), status: {}, cleared: false };
-  checkMissedDays(p);
+  startDay(p);
   return p;
 }
 
@@ -52,11 +51,28 @@ export function PlayerProvider({ children }) {
   const update = useCallback((fn) => {
     const s = store.current;
     const next = structuredClone(s[s.mode]);
+    if (s.mode === 'real') startDay(next); // never apply an action to yesterday's quests
     const out = fn(next);
     s[s.mode] = next;
     write(s.mode === 'demo' ? DEMO_KEY : KEY, next);
     setPlayer(next);
     return out;
+  }, []);
+
+  // A tab left open past midnight: start the new day (and count a missed one) without waiting for a reload.
+  useEffect(() => {
+    const check = () => {
+      const s = store.current;
+      const real = structuredClone(s.real);
+      const newDay = startDay(real);
+      if (newDay) { s.real = real; write(KEY, real); }
+      if (s.demo && s.demo.day?.date !== today()) { s.demo = showcasePlayer(s.real); write(DEMO_KEY, s.demo); }
+      else if (!newDay) return;
+      setPlayer(s[s.mode]);
+    };
+    const t = setInterval(check, 30_000);
+    document.addEventListener('visibilitychange', check);
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', check); };
   }, []);
 
   const enterDemo = useCallback(() => {

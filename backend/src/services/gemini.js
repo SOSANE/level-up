@@ -7,14 +7,32 @@ import { config } from '../config.js';
 const ai = config.gemini.apiKey ? new GoogleGenAI({ apiKey: config.gemini.apiKey }) : null;
 export const geminiEnabled = Boolean(ai);
 
+// Busy (503) and rate-limited (429) answers are common and short-lived: retry, then try the fallback model.
+const RETRY_DELAYS_MS = [1000, 3000];
+const busy = (err) => err?.status === 429 || err?.status === 503;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function askJson(contents, schema) {
   if (!ai) throw new Error('Gemini is not configured');
-  const res = await ai.models.generateContent({
-    model: config.gemini.model,
-    contents,
-    config: { responseMimeType: 'application/json', responseJsonSchema: schema },
-  });
-  return JSON.parse(res.text);
+  const models = [...new Set([config.gemini.model, config.gemini.fallbackModel].filter(Boolean))];
+  let lastErr;
+  for (const model of models) {
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      try {
+        const res = await ai.models.generateContent({
+          model,
+          contents,
+          config: { responseMimeType: 'application/json', responseJsonSchema: schema },
+        });
+        return JSON.parse(res.text);
+      } catch (err) {
+        if (!busy(err)) throw err;
+        lastErr = err;
+        if (attempt < RETRY_DELAYS_MS.length) await sleep(RETRY_DELAYS_MS[attempt]);
+      }
+    }
+  }
+  throw lastErr;
 }
 
 const PROOF_HINT = {
@@ -24,13 +42,24 @@ const PROOF_HINT = {
   HONOR: 'honor system',
 };
 
-// categories: [{ id, name, proof, mins, title }] -> [{ category, title, description }]
+// The day's 4 quests run hard to easy; extras (difficulty null) stay light.
+const DIFFICULTY_HINT = {
+  hard: 'HARD: the toughest quest of the day, a real stretch for the player',
+  medium: 'MEDIUM: a solid challenge that takes real effort',
+  'medium-easy': 'MEDIUM-EASY: steady and comfortable, a little effort',
+  easy: 'EASY: a quick win anyone can do today',
+};
+
+// categories: [{ id, name, proof, mins, title, difficulty }] -> [{ category, title, description }]
 export async function generateQuests({ categories, rank, recentTitles }) {
-  const lines = categories.map((c) => `- ${c.id} (${c.name}, ${c.mins} minutes, ${PROOF_HINT[c.proof]}). Example: "${c.title}"`);
+  const lines = categories.map((c) =>
+    `- ${c.id} (${c.name}, ${c.mins} minutes, ${DIFFICULTY_HINT[c.difficulty] || 'EXTRA: light, optional'}, ${PROOF_HINT[c.proof]}). Example: "${c.title}"`);
   const prompt = `You write daily quests for a habit app styled like an RPG.
 Write exactly one quest for each of these categories, sized to fit the given minutes:
 ${lines.join('\n')}
-The player is rank ${rank} (E is a beginner, S is a veteran); higher ranks get slightly more ambitious quests.
+Match each quest to its difficulty: within the same minutes, a hard quest asks for more intensity, volume, or
+precision than an easy one. The player is rank ${rank} (E is a beginner, S is a veteran); higher ranks get
+slightly more ambitious quests at every difficulty.
 Quests must be safe, realistic, doable in one session, and specific. Titles under 60 characters,
 descriptions one or two sentences.
 Avoid repeating these recent quests: ${recentTitles.join('; ') || 'none'}.`;

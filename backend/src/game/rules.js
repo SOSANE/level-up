@@ -6,11 +6,18 @@ import { CATEGORY, MATERIAL, STAT_OF } from './content.js';
 export const RANKS = [['E', 1], ['D', 5], ['C', 10], ['B', 20], ['A', 35], ['S', 50]];
 export const XP_PER_LEVEL = 1000;
 export const BAR_TARGET = 10;
-export const REQUIRED_PER_DAY = 4;
-export const QUESTS_PER_DAY = 5; // 4 required + 1 bonus
+// The 4 daily quests, hardest first. A required quest's EXP is its points.
+export const DIFFICULTY = [
+  { id: 'hard', name: 'Hard', points: 50 },
+  { id: 'medium', name: 'Medium', points: 30 },
+  { id: 'medium-easy', name: 'Medium-easy', points: 20 },
+  { id: 'easy', name: 'Easy', points: 10 },
+];
+export const DIFFICULTY_BY_ID = Object.fromEntries(DIFFICULTY.map((d) => [d.id, d]));
+export const REQUIRED_PER_DAY = DIFFICULTY.length;
 export const REWARD = {
-  required: { xp: 25, coins: 10, qty: 1 },
-  bonus: { xp: 40, coins: 20, qty: 2 },
+  required: { coins: 10, qty: 1 },
+  bonus: { xp: 40, coins: 20, qty: 2 }, // only quests generated before difficulties existed
   extra: { xp: 20, coins: 8, qty: 1 },
   clear: { xp: 50, coins: 25 },
 };
@@ -39,21 +46,38 @@ export function gain(p, xp, coins) {
   return p.level - before;
 }
 
-// Same rotation as the frontend: an offset by calendar day, never repeating a category in one day.
-export function questSlotsForDay(chosen, date, extra = 0) {
+// Game days since the player started: 0 on their first day.
+export const dayNumber = (started, date) => Math.round((Date.parse(date) - Date.parse(started)) / 864e5);
+
+// A window of 4 categories over the player's chosen list, hardest first, moving back one category a day (and
+// wrapping around). With 10 categories: day 1 is 1, 2, 3, 4 (hard to easy), day 2 is 10, 1, 2, 3, day 3 is 9, 10, 1, 2.
+// So each category steps down one difficulty a day. Extras continue the window; a category never repeats in one day.
+export function questSlotsForDay(chosen, date, { started = date, extra = 0 } = {}) {
   const n = chosen.length;
   if (!n) return [];
-  const off = Math.floor(new Date(date).getTime() / 864e5) % n;
-  const count = Math.min(n, QUESTS_PER_DAY + extra);
-  return Array.from({ length: count }, (_, k) => ({
-    category: chosen[(off + k) % n],
-    position: k,
-    kind: k < REQUIRED_PER_DAY ? 'required' : k === REQUIRED_PER_DAY ? 'bonus' : 'extra',
-  }));
+  const off = (((-dayNumber(started, date)) % n) + n) % n;
+  const count = Math.min(n, REQUIRED_PER_DAY + extra);
+  return Array.from({ length: count }, (_, k) => ({ category: chosen[(off + k) % n], ...slotAt(k) }));
 }
 
-export function questReward(kind, proof) {
-  return { ...REWARD[kind], material: MATERIAL[proof] };
+const slotAt = (k) => (k < REQUIRED_PER_DAY
+  ? { position: k, kind: 'required', difficulty: DIFFICULTY[k].id }
+  : { position: k, kind: 'extra', difficulty: null });
+
+// Which of today's slots still need a quest. Once a day has quests its required ones are fixed:
+// anything added later (an extra quest, or new categories picked mid-day) goes after them as an extra,
+// so changing categories can't add required quests or pay the daily clear bonus twice.
+export function slotsToAdd(slots, existing) {
+  const have = new Set(existing.map((q) => q.category));
+  const missing = slots.filter((s) => !have.has(s.category));
+  if (!existing.length) return missing;
+  const room = Math.max(0, slots.length - existing.length);
+  return missing.slice(0, room).map((s, i) => ({ ...s, ...slotAt(existing.length + i) }));
+}
+
+export function questReward(kind, proof, difficulty) {
+  const xp = kind === 'required' ? DIFFICULTY_BY_ID[difficulty]?.points ?? DIFFICULTY.at(-1).points : REWARD[kind].xp;
+  return { ...REWARD[kind], xp, material: MATERIAL[proof] };
 }
 
 // Extra quests unlock once everything listed today is done, one new category each.
@@ -65,9 +89,9 @@ export function canAddQuest(quests, chosenCount) {
 // Returns the reward shape the frontend's RewardPopup reads.
 export function completeQuest(p, quest, { requiredDoneAfter, alreadyCleared }) {
   const c = CATEGORY[quest.category];
-  const base = questReward(quest.kind, quest.proof);
+  const base = questReward(quest.kind, quest.proof, quest.difficulty);
   const r = {
-    category: c.name, xp: base.xp, coins: base.coins, material: base.material, qty: base.qty,
+    category: c.name, difficulty: quest.difficulty, xp: base.xp, coins: base.coins, material: base.material, qty: base.qty,
     barFrom: p.bars[quest.category] || 0,
   };
   p.bars[quest.category] = Math.min(BAR_TARGET, r.barFrom + 1);

@@ -4,8 +4,9 @@ import assert from 'node:assert/strict';
 
 process.env.AUTH_DISABLED = 'true';
 process.env.DEMO_MODE = 'true';
-delete process.env.GEMINI_API_KEY;
-delete process.env.ELEVENLABS_API_KEY;
+// Empty, not deleted: dotenv only fills in variables that are missing.
+process.env.GEMINI_API_KEY = '';
+process.env.ELEVENLABS_API_KEY = '';
 
 const { createApp } = await import('../src/app.js');
 const { pool } = await import('../src/db/pool.js');
@@ -30,18 +31,24 @@ async function call(method, path, body) {
 const step = (name) => console.log(`  ok  ${name}`);
 
 try {
-  // Put "strength" where today's rotation starts, so it is one of the 4 required quests.
-  const ids = CATEGORY_LIST.slice(0, 10).map((c) => c.id);
-  const off = Math.floor(new Date(todayStr()).getTime() / 864e5) % ids.length;
-  const chosen = [...ids.filter((c) => c !== 'strength')];
-  chosen.splice(off, 0, 'strength');
+  // Day 1 starts with the first chosen category, so "strength" goes first: the hard quest.
+  const chosen = CATEGORY_LIST.slice(0, 10).map((c) => c.id);
 
   const onboard = await call('POST', '/onboarding', { chosen, name: 'Smoke', look: { body: 'girl' } });
-  assert.equal(onboard.quests.length, 5);
-  step('onboarding creates 5 quests');
+  assert.deepEqual(onboard.quests.map((q) => [q.category, q.difficulty, q.points]),
+    chosen.slice(0, 4).map((c, i) => [c, ['hard', 'medium', 'medium-easy', 'easy'][i], [50, 30, 20, 10][i]]));
+  step('onboarding creates 4 quests, hard to easy, from the first 4 categories');
 
   const strength = onboard.quests.find((q) => q.category === 'strength');
   assert.equal(strength.kind, 'required');
+  // A first attempt that was given up: its high, flat heart rate must not count toward the retry.
+  await call('POST', `/quests/${strength.id}/start`);
+  await pool.query(`UPDATE quests SET started_at = now() - interval '25 minutes', ends_at = now() - interval '15 minutes' WHERE id = $1`, [strength.id]);
+  const gaveUpAt = Date.now() - 25 * 60e3;
+  await call('POST', `/quests/${strength.id}/vitals`, { readings: Array.from({ length: 60 }, (_, i) => ({ t: gaveUpAt + i * 1000, bpm: 150 })) });
+  await call('POST', `/quests/${strength.id}/cancel`);
+  step('gave up a first attempt after uploading readings');
+
   await call('POST', `/quests/${strength.id}/start`);
   // Pretend the 10-minute session already happened, so readings fall inside the quest window.
   await pool.query(`UPDATE quests SET started_at = now() - interval '10 minutes', ends_at = now() WHERE id = $1`, [strength.id]);
@@ -63,7 +70,8 @@ try {
   step(`strength quest verified from stored readings (${done.reward.reason})`);
 
   const vitals = await call('GET', `/quests/${strength.id}/vitals`);
-  assert.ok(vitals.series.length >= 10, `${vitals.series.length} minutes`);
+  assert.ok(vitals.series.length >= 10 && vitals.series.length <= 11, `${vitals.series.length} minutes (this attempt only)`);
+  assert.ok(vitals.summary.startBpm < 100, 'start is from this attempt, not the one given up');
   assert.ok(vitals.summary.peakBpm > vitals.summary.startBpm + 15);
   step(`vitals_per_minute returns ${vitals.series.length} minutes`);
 
@@ -83,6 +91,10 @@ try {
   const closed = await call('POST', '/demo/next-day', { outcome: 'auto' });
   assert.equal(closed.result.result, 'cleared');
   step('end of day recorded a cleared day');
+
+  const day2 = await call('GET', '/quests/today');
+  assert.deepEqual(day2.map((q) => q.category), [chosen[9], chosen[0], chosen[1], chosen[2]]);
+  step('day 2: hard is category 10, then categories 1, 2, 3');
 
   const stats = await call('GET', '/stats?days=2');
   const todayRow = stats.days.at(-1);
