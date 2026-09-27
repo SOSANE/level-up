@@ -48,7 +48,7 @@ export function Potion({ color, size = 56 }) {
   return (
     <svg width={size} height={size * 1.25} viewBox="0 0 40 50" aria-hidden="true">
       <rect x="15" y="2" width="10" height="7" rx="1.5" fill="#6B4A2B" />
-      <path d="M16 9h8v8c6 2.5 10 7.5 10 14a14 14 0 0 1-28 0c0-6.5 4-11.5 10-14z" fill="rgba(255,255,255,.7)" stroke={color} strokeWidth="1.6" />
+      <path d="M16 9h8v8c6 2.5 10 7.5 10 14a14 14 0 0 1-28 0c0-6.5 4-11.5 10-14z" fill="rgba(255,255,255,.06)" stroke={color} strokeWidth="1.6" />
       <path d="M8.2 30h23.6a12 12 0 0 1-23.6 0z" fill={color} opacity=".75" />
       <circle cx="16" cy="36" r="1.6" fill="#fff" opacity=".5" /><circle cx="23" cy="33" r="1" fill="#fff" opacity=".4" />
       <path d="M13 22c-2 2-3 4-3 6" stroke="#fff" strokeOpacity=".35" strokeWidth="1.5" fill="none" strokeLinecap="round" />

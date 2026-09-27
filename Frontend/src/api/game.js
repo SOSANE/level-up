@@ -2,7 +2,7 @@
 import { CATEGORY, MATERIAL, POTIONS, RARE } from './data.js';
 
 export const RANKS = [['E', 1], ['D', 5], ['C', 10], ['B', 20], ['A', 35], ['S', 50]];
-export const RANK_COLOR = { S: '#C9971C', A: '#D93A4A', B: '#0A9BC2', C: '#2F6FD6', D: '#5F7A92', E: '#8A9AAD' };
+export const RANK_COLOR = { S: '#F2B84B', A: '#FF5C74', B: '#0ECCED', C: '#4D8FE8', D: '#B9D3E2', E: '#87A4B5' };
 export const XP_PER_LEVEL = 1000;
 export const REWARD = { required: { xp: 25, coins: 10, qty: 1 }, bonus: { xp: 40, coins: 20, qty: 2 }, extra: { xp: 20, coins: 8, qty: 1 }, clear: { xp: 50, coins: 25 } };
 export const RIFT = { xpPerDay: 150, coinsPerDay: 25, hoursPerDay: 1 };
