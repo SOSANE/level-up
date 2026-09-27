@@ -1,57 +1,51 @@
-// Closes out a user's game day: perfect day -> EXP (maybe rank-up); any miss -> banished to the Rift.
-// Used by the midnight cron job and by POST /api/demo/next-day.
-import { Quest } from '../models/Quest.js';
-import { CategoryProgress } from '../models/CategoryProgress.js';
-import { applyFailedDay, applyPerfectDay, rankForLevel, rankIndex } from './rules.js';
+// Closes out a user's game day: 4 required quests done -> cleared; otherwise banished to the Rift.
+// Used by the midnight cron job and by POST /api/demo/next-day. Each day closes in one transaction.
+import { withTransaction } from '../db/pool.js';
+import * as usersDb from '../db/users.js';
+import * as questsDb from '../db/quests.js';
+import * as progressDb from '../db/progress.js';
+import * as eventsDb from '../db/events.js';
+import { dayResult, sendToRift } from './rules.js';
+import { playerState } from './userView.js';
 import { ensureQuestsForDay } from '../services/quests.js';
 import { createChapter } from '../services/story.js';
 import { addDays } from '../utils/dates.js';
 
 // forceOutcome: 'perfect' | 'fail' | undefined (demo mode only)
-export async function processDay(user, { nextDate, forceOutcome } = {}) {
-  const date = user.gameDate;
-  const quests = await Quest.find({ userId: user._id, date });
+export async function processDay(userId, { forceOutcome } = {}) {
+  const closed = await withTransaction(async (db) => {
+    const user = await usersDb.findById(userId, db, { forUpdate: true });
+    const date = user.gameDate;
+    let quests = await questsDb.listForDay(user.id, date, db);
+    if (forceOutcome === 'perfect') quests = quests.map((q) => (q.kind === 'required' ? { ...q, status: 'completed' } : q));
 
-  if (forceOutcome === 'perfect') {
-    await Quest.updateMany(
-      { userId: user._id, date, status: { $ne: 'completed' } },
-      { status: 'completed', completedAt: new Date() }
-    );
-    quests.forEach((q) => (q.status = 'completed'));
+    const result = forceOutcome === 'fail' ? (dayResult(quests) === 'missed' ? 'missed' : 'partial') : dayResult(quests);
+    const done = quests.filter((q) => q.status === 'completed').length;
+    await questsDb.failMissing(user.id, date, db);
+    await eventsDb.record(db, { userId: user.id, type: 'day_closed', result, onDate: date, data: { done, total: quests.length } });
+
+    const fields = { gameDate: addDays(date, 1), extraToday: 0 };
+    let rift = null;
+    if (result === 'cleared') {
+      fields.failedDaysInRow = 0;
+    } else {
+      const p = playerState(user, await progressDb.getBars(user.id, db));
+      fields.failedDaysInRow = user.failedDaysInRow + 1;
+      rift = sendToRift(p, 1, { hoursFor: fields.failedDaysInRow });
+      Object.assign(fields, { level: p.level, xp: p.xp, coins: p.coins, items: p.items, rift });
+      await eventsDb.record(db, {
+        userId: user.id, type: 'rift', onDate: date, xp: -rift.lost.xp, coins: -rift.lost.coins, data: rift.lost,
+      });
+    }
+    const saved = await usersDb.update(user.id, fields, db);
+    return { user: saved, result, date, rift };
+  });
+
+  if (closed.rift) {
+    await createChapter(closed.user, 'banished', {
+      expLost: closed.rift.lost.xp, coinsLost: closed.rift.lost.coins, banishHours: closed.rift.hours,
+    });
   }
-
-  const missed = quests.filter((q) => q.status !== 'completed');
-  const perfect = forceOutcome !== 'fail' && quests.length > 0 && missed.length === 0;
-
-  // Missed quests fail, and their category bars reset to 0 (the "consecutive" rule).
-  if (missed.length) {
-    await Quest.updateMany({ _id: { $in: missed.map((q) => q._id) } }, { status: 'failed' });
-    await CategoryProgress.updateMany(
-      { userId: user._id, category: { $in: missed.map((q) => q.category) } },
-      { count: 0 }
-    );
-  }
-
-  const before = {
-    level: user.level, exp: user.exp, coins: user.coins,
-    streak: user.streak, failedDaysInRow: user.failedDaysInRow,
-  };
-  const { state, summary } = perfect ? applyPerfectDay(before) : applyFailedDay(before);
-
-  Object.assign(user, state);
-  user.rank = rankForLevel(user.level);
-  if (!perfect) user.inRift = true;
-  user.lastDayResult = { ...summary, date, missedCategories: missed.map((q) => q.category) };
-  user.gameDate = nextDate || addDays(date, 1);
-  await user.save();
-
-  // Story: one chapter per event.
-  if (!perfect) {
-    await createChapter(user, 'banished', summary);
-  } else if (rankIndex(summary.rankAfter) > rankIndex(summary.rankBefore)) {
-    await createChapter(user, 'rankUp', summary);
-  }
-
-  await ensureQuestsForDay(user, user.gameDate);
-  return user.lastDayResult;
+  await ensureQuestsForDay(closed.user);
+  return { date: closed.date, result: closed.result, rift: closed.rift };
 }

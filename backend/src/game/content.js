@@ -1,50 +1,65 @@
-// Game content: categories, materials, characters, and fallback quests.
-// Names marked PLACEHOLDER get replaced with the story bible from the Gemini teammate.
+// Game content, kept identical to frontend/src/api/data.js so both sides agree on ids, proofs, and names.
 
-// verification: how a quest in this category is proven.
-//   photo   -> Gemini checks an uploaded photo
-//   presage -> vitals summary from the Presage companion app
-//   self    -> honor system
-export const CATEGORIES = {
-  hobbies:           { label: 'Hobbies',                         verification: 'self',    material: { id: 'spark_gem',    name: 'Spark Gem' } },
-  studying:          { label: 'Studying',                        verification: 'presage', material: { id: 'ink_scroll',   name: 'Ink Scroll' } },
-  socializing:       { label: 'Socializing',                     verification: 'self',    material: { id: 'bond_thread',  name: 'Bond Thread' } },
-  reading:           { label: 'Reading',                         verification: 'photo',   material: { id: 'lore_page',    name: 'Lore Page' } },
-  instrument:        { label: 'Practicing an instrument',        verification: 'self',    material: { id: 'echo_crystal', name: 'Echo Crystal' } },
-  cooking:           { label: 'Cooking a meal / eating healthier', verification: 'photo', material: { id: 'hearth_ember', name: 'Hearth Ember' } },
-  cleaning:          { label: 'Cleaning',                        verification: 'photo',   material: { id: 'clear_dew',    name: 'Clear Dew' } },
-  organizing:        { label: 'Organizing',                      verification: 'photo',   material: { id: 'order_rune',   name: 'Order Rune' } },
-  working:           { label: 'Working',                         verification: 'self',    material: { id: 'guild_seal',   name: 'Guild Seal' } },
-  strength_training: { label: 'Strength training',               verification: 'presage', material: { id: 'iron_shard',   name: 'Iron Shard' } },
-  yoga:              { label: 'Yoga',                            verification: 'presage', material: { id: 'calm_petal',   name: 'Calm Petal' } },
+// proof: how a quest in this category is proven.
+//   VITALS -> heart rate / breathing readings from Presage, stored in vitals_readings
+//   FOCUS  -> focus-score readings during the session
+//   PHOTO  -> Gemini checks an uploaded photo
+//   HONOR  -> the player's word
+export const CATEGORY_LIST = [
+  ['strength', 'Strength training', 'VITALS', 15, 'Gym session — heart rate check before and after'],
+  ['yoga', 'Yoga', 'VITALS', 10, 'Guided breathing flow — slow your breath'],
+  ['running', 'Running', 'VITALS', 12, 'Easy jog, any pace'],
+  ['walk', 'Nature walks', 'PHOTO', 20, 'Walk outside and photograph something green'],
+  ['reading', 'Reading', 'PHOTO', 15, 'Read 10 pages and photograph where you stopped'],
+  ['study', 'Studying', 'FOCUS', 25, 'One focused study block, phone out of reach'],
+  ['language', 'New language', 'FOCUS', 15, 'Learn and say 10 new words out loud'],
+  ['meditate', 'Meditation', 'FOCUS', 8, 'Sit in silence, eyes closed'],
+  ['cooking', 'Cooking healthier', 'PHOTO', 30, 'Cook one meal with a vegetable in it'],
+  ['cleaning', 'Cleaning', 'PHOTO', 15, 'Clear one surface — before and after photo'],
+  ['organizing', 'Organizing', 'PHOTO', 15, 'Sort out one drawer'],
+  ['journal', 'Journaling', 'PHOTO', 10, 'Write half a page about today'],
+  ['drawing', 'Drawing', 'PHOTO', 15, 'Sketch anything in front of you'],
+  ['instrument', 'Instrument practice', 'HONOR', 15, 'Practice scales, then one song'],
+  ['music', 'Music', 'HONOR', 40, 'Listen to a full album, no phone'],
+  ['hobbies', 'Hobbies', 'HONOR', 20, 'Spend time on the hobby you keep postponing'],
+  ['social', 'Socializing', 'HONOR', 10, 'Call a friend you haven’t talked to in a while'],
+  ['working', 'Working', 'HONOR', 25, 'Finish the task you keep pushing back'],
+  ['sleep', 'Sleep by 11', 'HONOR', 5, 'Phone down and lights out by 11 pm'],
+  ['water', 'Hydration', 'HONOR', 5, 'Drink 6 glasses of water today'],
+  ['stretch', 'Stretching', 'HONOR', 10, 'Full-body stretch, hold each pose 30 seconds'],
+  ['cycling', 'Cycling', 'VITALS', 20, 'Ride at a pace that makes talking hard'],
+  ['swim', 'Swimming', 'HONOR', 20, 'Swim 10 easy lengths'],
+  ['budget', 'Budgeting', 'PHOTO', 10, 'Log every purchase from this week'],
+  ['garden', 'Plants & gardening', 'PHOTO', 15, 'Water, repot or trim one plant'],
+  ['code', 'Side project', 'FOCUS', 30, 'Build one small piece of your project'],
+  ['detox', 'Screen-time detox', 'FOCUS', 60, 'One full hour with the phone in another room'],
+  ['family', 'Family time', 'HONOR', 20, 'Share a meal or a walk with family'],
+  ['volunteer', 'Helping others', 'HONOR', 15, 'Do one thing for someone without being asked'],
+  ['selfcare', 'Self-care', 'HONOR', 10, 'Shower, skincare, clean clothes — reset yourself'],
+].map(([id, name, proof, mins, title]) => ({ id, name, proof, mins, title }));
+
+export const CATEGORY = Object.fromEntries(CATEGORY_LIST.map((c) => [c.id, c]));
+export const CATEGORY_IDS = CATEGORY_LIST.map((c) => c.id);
+export const MIN_CATEGORIES = 10;
+export const PROOFS = ['VITALS', 'FOCUS', 'PHOTO', 'HONOR'];
+
+// Each verification type drops its own crafting material (materials are keyed by name, as on the frontend).
+export const MATERIAL = {
+  VITALS: { name: 'Iron ore', color: '#FF5C74' },
+  PHOTO: { name: 'Spirit herb', color: '#B9D3E2' },
+  FOCUS: { name: 'Mana crystal', color: '#0ECCED' },
+  HONOR: { name: 'Oath token', color: '#4D8FE8' },
 };
 
-export const CATEGORY_IDS = Object.keys(CATEGORIES);
+// Each verification type trains one stat.
+export const STAT_OF = { VITALS: 'Strength', FOCUS: 'Intelligence', PHOTO: 'Perception', HONOR: 'Willpower' };
 
-export const MATERIALS = Object.fromEntries(
-  Object.entries(CATEGORIES).map(([category, c]) => [c.material.id, { ...c.material, category }])
-);
-
-// PLACEHOLDER names until the story bible is ready. Voice env names come from these ids.
-export const CHARACTERS = {
-  starter1: { name: 'Starter One' },
-  starter2: { name: 'Starter Two' },
-  starter3: { name: 'Starter Three' },
+// Potion marketplace (frontend/src/pages/Profile.jsx).
+export const SHOP_ITEMS = {
+  freeze: { id: 'freeze', name: 'Frost elixir', desc: 'Freezes your streak for one missed day', cost: 100 },
+  shield: { id: 'shield', name: 'Ward potion', desc: 'Cuts a Rift banishment to 30 min', cost: 150 },
+  outfit: { id: 'outfit', name: 'Essence of style', desc: 'Unlocks 3 premium outfit colors', cost: 400 },
 };
 
-export const MATERIAL_PRICE = 50; // coins per material in the shop
-
-// Used when Gemini is unavailable. The Gemini teammate expands this to 30+.
-export const FALLBACK_QUESTS = {
-  hobbies:           [['Creative half hour', 'Spend time on a hobby you enjoy, with no phone.', 20, 1], ['Make something', 'Finish a small piece of work in your hobby.', 40, 2]],
-  studying:          [['Focused study block', 'Study one topic at your desk without breaks.', 25, 1], ['Deep study session', 'Study and write a short summary of what you learned.', 45, 2]],
-  socializing:       [['Reach out', 'Message or call a friend you have not talked to this week.', 10, 1], ['Meet up', 'Spend time in person with a friend or family member.', 45, 2]],
-  reading:           [['Read 10 pages', 'Read at least 10 pages of a book. Photo: the open book.', 20, 1], ['Read a chapter', 'Finish a full chapter. Photo: the page you stopped on.', 40, 2]],
-  instrument:        [['Warm-up practice', 'Practice scales or a warm-up routine.', 15, 1], ['Learn a passage', 'Practice one hard passage until it is clean.', 30, 2]],
-  cooking:           [['Cook a simple meal', 'Cook a meal with at least one vegetable. Photo: the plate.', 30, 1], ['Healthy full meal', 'Cook a balanced meal from scratch. Photo: the plate.', 60, 3]],
-  cleaning:          [['Quick clean', 'Clean one surface or area. Photo: the result.', 15, 1], ['Room reset', 'Clean a whole room. Photo: the room.', 40, 2]],
-  organizing:        [['Tidy a drawer', 'Organize one drawer or shelf. Photo: the result.', 15, 1], ['Organize your desk', 'Clear and organize your whole desk. Photo: the desk.', 30, 2]],
-  working:           [['Focused work block', 'Work on your most important task without distractions.', 30, 1], ['Deep work', 'Two focused hours on one important task.', 120, 3]],
-  strength_training: [['Bodyweight circuit', '3 rounds: 10 push-ups, 15 squats, 30-second plank.', 15, 1], ['Gym session', 'A full strength session at the gym.', 45, 2]],
-  yoga:              [['Guided breathing', 'Five minutes of slow guided breathing.', 5, 1], ['Yoga flow', 'A 20-minute yoga flow ending with slow breathing.', 20, 2]],
-};
+// Arena win in the Gates (frontend/src/pages/Gate.jsx). Once per game day, Rank C and up.
+export const GATE_REWARD = { xp: 40, coins: 30, minLevel: 10 };

@@ -1,56 +1,45 @@
-// Shapes the user document into the JSON the frontend reads from GET /api/me.
-import { CategoryProgress } from '../models/CategoryProgress.js';
-import { CATEGORIES, CHARACTERS } from './content.js';
-import { awakeningStatus, expToNext } from './rules.js';
+// Shapes a user into the player object the frontend already reads (frontend/src/api/player.jsx).
+import * as progressDb from '../db/progress.js';
+import * as questsDb from '../db/quests.js';
+import * as eventsDb from '../db/events.js';
+import { addDays } from '../utils/dates.js';
+import { dayResult, rankOf, streak } from './rules.js';
 
-export async function getBars(user) {
-  return CategoryProgress.find({ userId: user._id }).lean();
-}
-
-export function materialsObject(user) {
-  return Object.fromEntries(user.materials || new Map());
-}
-
-export function awakeningFor(user, bars) {
-  return awakeningStatus({
-    awakened: user.awakened,
-    categories: user.categories,
-    bars,
-    materials: materialsObject(user),
-    materialFor: (c) => CATEGORIES[c].material.id,
-  });
+// The game state rules.js works on, as plain data.
+export function playerState(user, bars) {
+  return {
+    level: user.level, xp: user.xp, coins: user.coins, chosen: user.chosen, bars: { ...bars },
+    materials: { ...user.materials }, stats: { ...user.stats }, items: { ...user.items }, questsDone: user.questsDone,
+  };
 }
 
 export async function userView(user) {
-  const bars = await getBars(user);
-  const now = Date.now();
-  const banished = Boolean(user.banishedUntil && user.banishedUntil.getTime() > now);
+  const [bars, quests, closed] = await Promise.all([
+    progressDb.getBars(user.id),
+    questsDb.listForDay(user.id, user.gameDate),
+    eventsDb.history(user.id, addDays(user.gameDate, -400), user.gameDate),
+  ]);
+
+  // Today is still open: its history entry comes from the quests, like the frontend does.
+  const history = { ...closed };
+  const todayResult = dayResult(quests);
+  if (todayResult !== 'missed') history[user.gameDate] = todayResult === 'cleared' ? 'd' : 'p';
+
+  const status = {};
+  for (const q of quests) {
+    if (q.status === 'completed') status[q.category] = 'done';
+    else if (q.status === 'active') status[q.category] = new Date(q.startedAt).getTime();
+  }
+
   return {
-    displayName: user.displayName,
-    onboarded: user.onboarded,
-    character: user.characterId
-      ? { id: user.characterId, name: CHARACTERS[user.characterId]?.name, awakened: user.awakened }
-      : null,
-    level: user.level,
-    exp: user.exp,
-    expToNext: expToNext(user.level),
-    rank: user.rank,
-    coins: user.coins,
-    streak: user.streak,
-    materials: materialsObject(user),
-    categories: user.categories,
-    bars: user.categories.map((c) => {
-      const b = bars.find((x) => x.category === c) || { count: 0, target: 10 };
-      return { category: c, label: CATEGORIES[c].label, count: b.count, target: b.target, materialId: CATEGORIES[c].material.id };
-    }),
-    banishment: {
-      active: banished,
-      until: banished ? user.banishedUntil : null,
-      remainingMs: banished ? user.banishedUntil.getTime() - now : 0,
-      failedDaysInRow: user.failedDaysInRow,
-    },
-    gameDate: user.gameDate,
-    lastDayResult: user.lastDayResult,
-    awakening: user.onboarded ? awakeningFor(user, bars) : null,
+    name: user.name, look: user.look, answers: user.answers, onboarded: user.onboarded,
+    level: user.level, xp: user.xp, rank: rankOf(user.level), coins: user.coins,
+    chosen: user.chosen, bars, materials: user.materials, stats: user.stats, items: user.items,
+    questsDone: user.questsDone, started: user.started, lastCheck: user.gameDate,
+    history,
+    streak: streak(history, { today: user.gameDate, started: user.started, freezes: user.items.freeze || 0 }),
+    day: { date: user.gameDate, status, cleared: todayResult === 'cleared', extra: user.extraToday },
+    rift: user.rift,
+    gateWonToday: user.gateWonOn === user.gameDate,
   };
 }

@@ -115,6 +115,29 @@ export function streak(p) {
   return n;
 }
 
+// Local stand-in for GET /api/stats (same row shape), rebuilt from the history calendar and the quest rotation.
+// Past days only record cleared/partial, so they count the minimum: 4 quests for a cleared day, 2 for a partial one.
+export function localDailyStats(p, days = 30) {
+  const n = p.chosen.length;
+  const d = new Date();
+  d.setDate(d.getDate() - (days - 1));
+  const out = [];
+  for (let i = 0; i < days; i++, d.setDate(d.getDate() + 1)) {
+    const date = today(d);
+    const h = p.history[date];
+    const row = { date, quests: 0, xp: 0, coins: 0, byProof: { VITALS: 0, FOCUS: 0, PHOTO: 0, HONOR: 0 }, result: h || null };
+    const count = (qs) => qs.forEach((q) => { row.quests++; row.xp += q.reward.xp; row.coins += q.reward.coins; row.byProof[q.proof]++; });
+    if (date === p.day?.date) count(todaysQuests(p).filter((q) => p.day.status[q.id] === 'done'));
+    else if (h && n) {
+      const off = Math.floor(new Date(date).getTime() / 864e5) % n;
+      count(Array.from({ length: h === 'd' ? 4 : 2 }, (_, k) => ({ proof: CATEGORY[p.chosen[(off + k) % n]].proof, reward: REWARD.required })));
+    }
+    if (h === 'd') { row.xp += REWARD.clear.xp; row.coins += REWARD.clear.coins; }
+    out.push(row);
+  }
+  return out;
+}
+
 export const mmss = (sec) => {
   const s = Math.max(0, Math.ceil(sec));
   const hh = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;

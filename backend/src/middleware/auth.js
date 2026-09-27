@@ -1,7 +1,7 @@
 // Auth0 check + loading (or creating) the user record for every protected request.
 import { auth } from 'express-oauth2-jwt-bearer';
 import { config } from '../config.js';
-import { User } from '../models/User.js';
+import * as usersDb from '../db/users.js';
 import { httpError } from '../utils/http.js';
 import { todayStr } from '../utils/dates.js';
 
@@ -9,7 +9,7 @@ export function requireAuth() {
   if (config.authDisabled) {
     // Local testing: pretend the caller is whoever the x-dev-user header names.
     return [(req, _res, next) => {
-      req.authSub = req.header('x-dev-user') || 'dev|local-user';
+      req.authSub = `dev|${req.header('x-dev-user') || 'local-user'}`;
       next();
     }];
   }
@@ -24,16 +24,7 @@ export function requireAuth() {
 
 // Creates the user on first login, so the frontend never needs a separate "sign up" call.
 export async function loadUser(req, _res, next) {
-  let user = await User.findOne({ auth0Id: req.authSub });
-  if (!user) {
-    try {
-      user = await User.create({ auth0Id: req.authSub, gameDate: todayStr() });
-    } catch (err) {
-      if (err.code !== 11000) throw err; // two first requests at once: the other one created it
-      user = await User.findOne({ auth0Id: req.authSub });
-    }
-  }
-  req.user = user;
+  req.user = await usersDb.findOrCreateByAuthId(req.authSub, todayStr());
   next();
 }
 

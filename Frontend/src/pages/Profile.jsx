@@ -1,7 +1,11 @@
+import { useEffect, useState } from 'react';
 import { usePlayer } from '../api/player.jsx';
 import { MATERIAL } from '../api/data.js';
 import { lookOf, stageOf } from '../api/look.js';
-import { today } from '../api/game.js';
+import { localDailyStats, today } from '../api/game.js';
+import { API_ENABLED, api } from '../api/client.js';
+import ActivityChart from '../components/ActivityChart.jsx';
+import TigerPanel from '../components/TigerPanel.jsx';
 import CharacterCard from '../components/CharacterCard.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
@@ -21,15 +25,29 @@ const DAY_LOOK = {
 };
 
 export default function Profile() {
-  const { player, update, reset } = usePlayer();
+  const { player, update, reset, demo } = usePlayer();
+  const t = today();
+
+  // With the backend on, the calendar and the 30-day chart come from Tiger Data's daily_player_stats view.
+  const live = API_ENABLED && !demo;
+  const [serverStats, setServerStats] = useState(null);
+  const [serverHistory, setServerHistory] = useState(null);
+  useEffect(() => {
+    if (!live) return;
+    let alive = true;
+    api.stats(30).then((s) => { if (alive) setServerStats(s); }).catch(() => {});
+    api.history(t.slice(0, 7)).then((h) => { if (alive) setServerHistory(h); }).catch(() => {});
+    return () => { alive = false; };
+  }, [live, t]);
+  const history = serverHistory ? { ...serverHistory, ...(player.history[t] && { [t]: player.history[t] }) } : player.history;
+  const activity = serverStats ? serverStats.days : localDailyStats(player, 30);
 
   const now = new Date();
   const month = now.toLocaleDateString('en-US', { month: 'long' });
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const t = today();
   const days = Array.from({ length: daysInMonth }, (_, k) => {
     const key = today(new Date(now.getFullYear(), now.getMonth(), k + 1));
-    const h = player.history[key];
+    const h = history[key];
     const kind = h || (key < t && key >= player.started ? 'm' : 'f');
     return { n: k + 1, ...DAY_LOOK[kind], label: `${key}: ${DAY_LOOK[kind].label}` };
   });
@@ -76,6 +94,12 @@ export default function Profile() {
             ))}
           </div>
         </SystemWindow>
+
+        <SystemWindow title="LAST 30 DAYS" icon={null}>
+          <ActivityChart days={activity} source={serverStats ? 'server' : 'local'} queryMs={serverStats?.queryMs} />
+        </SystemWindow>
+
+        {API_ENABLED && <TigerPanel />}
 
         <SystemWindow title="POTION MARKETPLACE" icon={null} tone="crimson">
           <div className="col" style={{ gap: 14 }}>
