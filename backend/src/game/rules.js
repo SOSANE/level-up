@@ -45,11 +45,20 @@ export function questSlotsForDay(chosen, date, extra = 0) {
   if (!n) return [];
   const off = Math.floor(new Date(date).getTime() / 864e5) % n;
   const count = Math.min(n, QUESTS_PER_DAY + extra);
-  return Array.from({ length: count }, (_, k) => ({
-    category: chosen[(off + k) % n],
-    position: k,
-    kind: k < REQUIRED_PER_DAY ? 'required' : k === REQUIRED_PER_DAY ? 'bonus' : 'extra',
-  }));
+  return Array.from({ length: count }, (_, k) => ({ category: chosen[(off + k) % n], position: k, kind: slotKind(k) }));
+}
+
+const slotKind = (k) => (k < REQUIRED_PER_DAY ? 'required' : k === REQUIRED_PER_DAY ? 'bonus' : 'extra');
+
+// Which of today's slots still need a quest. Once a day has quests its required and bonus ones are fixed:
+// anything added later (an extra quest, or new categories picked mid-day) goes after them as an extra,
+// so changing categories can't add required quests or pay the daily bonus twice.
+export function slotsToAdd(slots, existing) {
+  const have = new Set(existing.map((q) => q.category));
+  const missing = slots.filter((s) => !have.has(s.category));
+  if (!existing.length) return missing;
+  const room = Math.max(0, slots.length - existing.length);
+  return missing.slice(0, room).map((s, i) => ({ ...s, position: existing.length + i, kind: slotKind(existing.length + i) }));
 }
 
 export function questReward(kind, proof) {

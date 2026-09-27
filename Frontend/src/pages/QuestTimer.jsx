@@ -5,7 +5,7 @@ import { usePlayer } from '../api/player.jsx';
 import { BLOCKED_APPS, PROOF_CTA, PROOF_LABEL } from '../api/data.js';
 import { completeQuest, mmss, todaysQuests } from '../api/game.js';
 import { createVitalsRecorder, subscribeHeartRate } from '../api/vitals.js';
-import { startServerQuest } from '../api/client.js';
+import { cancelServerQuest, startServerQuest } from '../api/client.js';
 import { Bar } from '../components/ui.jsx';
 
 function HeartRate({ onReading }) {
@@ -40,13 +40,14 @@ function HeartRate({ onReading }) {
 
 export default function QuestTimer() {
   const { id } = useParams();
-  const { player, update } = usePlayer();
+  const { player, update, demo } = usePlayer();
   const navigate = useNavigate();
   const quest = todaysQuests(player).find((q) => q.id === id);
   const started = player.day.status[id];
   const [now, setNow] = useState(Date.now());
   const completing = useRef(false);
   const recorder = useRef(null);
+  const serverQuest = useRef(null); // promise of the backend quest id (null when it stays local)
   const isVitals = quest?.proof === 'VITALS';
 
   // Starting is stored, so a refresh resumes the same countdown.
@@ -60,7 +61,8 @@ export default function QuestTimer() {
   // Vitals quests record every reading; with the backend on, they stream to the vitals_readings hypertable.
   useEffect(() => {
     if (!isVitals) return;
-    const r = createVitalsRecorder(startServerQuest(id));
+    serverQuest.current = startServerQuest(id);
+    const r = createVitalsRecorder(serverQuest.current);
     recorder.current = r;
     return () => { if (recorder.current === r && !completing.current) { r.discard(); recorder.current = null; } };
   }, [id, isVitals]);
@@ -72,9 +74,10 @@ export default function QuestTimer() {
   const total = quest.mins * 60;
   const left = typeof started === 'number' ? total - (now - started) / 1000 : total;
   const finished = left <= 0;
+  const canComplete = finished || demo; // the judge demo can skip the wait, like the backend's DEMO_MODE
 
   async function complete() {
-    if (completing.current) return;
+    if (completing.current || !canComplete) return;
     completing.current = true; // keep the done-redirect from replacing the navigation that carries the reward
     let vitals;
     if (recorder.current) {
@@ -88,6 +91,8 @@ export default function QuestTimer() {
   function abandon() {
     recorder.current?.discard();
     recorder.current = null;
+    if (serverQuest.current) cancelServerQuest(serverQuest.current);
+    serverQuest.current = null;
     update((p) => { delete p.day.status[id]; });
     navigate('/dashboard');
   }
@@ -112,7 +117,8 @@ export default function QuestTimer() {
 
       <div className="row wrap" style={{ justifyContent: 'center' }}>
         <button className="btn btn-ghost" onClick={abandon}>Give up</button>
-        <button className={`btn ${finished ? 'btn-gold' : 'btn-blue'}`} onClick={complete}>{PROOF_CTA[quest.proof]}</button>
+        <button className={`btn ${finished ? 'btn-gold' : 'btn-blue'}`} onClick={complete} disabled={!canComplete}
+          title={canComplete ? undefined : 'Finish the countdown first'}>{PROOF_CTA[quest.proof]}</button>
       </div>
     </div>
   );

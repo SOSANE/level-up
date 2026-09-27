@@ -10,7 +10,7 @@ import SystemWindow from '../components/SystemWindow.jsx';
 import WarningBox from '../components/WarningBox.jsx';
 
 export default function Dashboard() {
-  const { player, update } = usePlayer();
+  const { player, update, demo } = usePlayer();
   const navigate = useNavigate();
   const { state } = useLocation();
   const reward = state?.reward;
@@ -73,7 +73,7 @@ export default function Dashboard() {
           </SystemWindow>
           <WarningBox lead="Miss the 4 required quests and you're banished to the Rift."
             detail="−150 EXP · −25 coins · apps locked 1 hour · +1 hour for every missed day in a row">
-            <button className="btn-danger" style={{ marginTop: 6 }} onClick={() => { update((p) => sendToRift(p, 1)); }}>Demo: fail today</button>
+            {demo && <button className="btn-danger" style={{ marginTop: 6 }} onClick={() => { update((p) => sendToRift(p, 1)); }}>Demo: fail today</button>}
           </WarningBox>
         </div>
         <Hud player={player} highlight={reward ? quests.find((q) => q.name === reward.category)?.id : undefined} />
