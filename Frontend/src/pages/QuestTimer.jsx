@@ -5,7 +5,7 @@ import { usePlayer } from '../api/player.jsx';
 import { BLOCKED_APPS, PROOF_CTA, PROOF_LABEL } from '../api/data.js';
 import { completeQuest, mmss, todaysQuests } from '../api/game.js';
 import { createVitalsRecorder, subscribeHeartRate } from '../api/vitals.js';
-import { startServerQuest } from '../api/client.js';
+import { cancelServerQuest, startServerQuest } from '../api/client.js';
 import { Bar } from '../components/ui.jsx';
 
 function HeartRate({ onReading }) {
@@ -47,6 +47,7 @@ export default function QuestTimer() {
   const [now, setNow] = useState(Date.now());
   const completing = useRef(false);
   const recorder = useRef(null);
+  const serverQuest = useRef(null); // promise of the backend quest id (null when it stays local)
   const isVitals = quest?.proof === 'VITALS';
 
   // Starting is stored, so a refresh resumes the same countdown.
@@ -60,7 +61,8 @@ export default function QuestTimer() {
   // Vitals quests record every reading; with the backend on, they stream to the vitals_readings hypertable.
   useEffect(() => {
     if (!isVitals) return;
-    const r = createVitalsRecorder(startServerQuest(id));
+    serverQuest.current = startServerQuest(id);
+    const r = createVitalsRecorder(serverQuest.current);
     recorder.current = r;
     return () => { if (recorder.current === r && !completing.current) { r.discard(); recorder.current = null; } };
   }, [id, isVitals]);
@@ -89,6 +91,8 @@ export default function QuestTimer() {
   function abandon() {
     recorder.current?.discard();
     recorder.current = null;
+    if (serverQuest.current) cancelServerQuest(serverQuest.current);
+    serverQuest.current = null;
     update((p) => { delete p.day.status[id]; });
     navigate('/dashboard');
   }
