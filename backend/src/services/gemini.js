@@ -42,13 +42,24 @@ const PROOF_HINT = {
   HONOR: 'honor system',
 };
 
-// categories: [{ id, name, proof, mins, title }] -> [{ category, title, description }]
+// The day's 4 quests run hard to easy; extras (difficulty null) stay light.
+const DIFFICULTY_HINT = {
+  hard: 'HARD: the toughest quest of the day, a real stretch for the player',
+  medium: 'MEDIUM: a solid challenge that takes real effort',
+  'medium-easy': 'MEDIUM-EASY: steady and comfortable, a little effort',
+  easy: 'EASY: a quick win anyone can do today',
+};
+
+// categories: [{ id, name, proof, mins, title, difficulty }] -> [{ category, title, description }]
 export async function generateQuests({ categories, rank, recentTitles }) {
-  const lines = categories.map((c) => `- ${c.id} (${c.name}, ${c.mins} minutes, ${PROOF_HINT[c.proof]}). Example: "${c.title}"`);
+  const lines = categories.map((c) =>
+    `- ${c.id} (${c.name}, ${c.mins} minutes, ${DIFFICULTY_HINT[c.difficulty] || 'EXTRA: light, optional'}, ${PROOF_HINT[c.proof]}). Example: "${c.title}"`);
   const prompt = `You write daily quests for a habit app styled like an RPG.
 Write exactly one quest for each of these categories, sized to fit the given minutes:
 ${lines.join('\n')}
-The player is rank ${rank} (E is a beginner, S is a veteran); higher ranks get slightly more ambitious quests.
+Match each quest to its difficulty: within the same minutes, a hard quest asks for more intensity, volume, or
+precision than an easy one. The player is rank ${rank} (E is a beginner, S is a veteran); higher ranks get
+slightly more ambitious quests at every difficulty.
 Quests must be safe, realistic, doable in one session, and specific. Titles under 60 characters,
 descriptions one or two sentences.
 Avoid repeating these recent quests: ${recentTitles.join('; ') || 'none'}.`;

@@ -5,7 +5,7 @@ import { DIFFICULTY_BY_ID, questReward, questSlotsForDay, rankOf, slotsToAdd } f
 import { generateQuests } from './gemini.js';
 
 async function draftQuests(user, slots) {
-  const categories = slots.map((s) => CATEGORY[s.category]);
+  const categories = slots.map((s) => ({ ...CATEGORY[s.category], difficulty: s.difficulty }));
   let written = [];
   try {
     const recentTitles = await questsDb.recentTitles(user.id);
