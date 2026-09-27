@@ -6,6 +6,7 @@ import { BLOCKED_APPS, PROOF_CTA, PROOF_LABEL } from '../api/data.js';
 import { completeQuest, mmss, todaysQuests } from '../api/game.js';
 import { createVitalsRecorder, subscribeHeartRate } from '../api/vitals.js';
 import { cancelServerQuest, startServerQuest } from '../api/client.js';
+import { useServerQuests, withServerText } from '../api/serverQuests.js';
 import { Bar } from '../components/ui.jsx';
 
 function HeartRate({ onReading }) {
@@ -42,7 +43,7 @@ export default function QuestTimer() {
   const { id } = useParams();
   const { player, update, demo } = usePlayer();
   const navigate = useNavigate();
-  const quest = todaysQuests(player).find((q) => q.id === id);
+  const quest = withServerText(todaysQuests(player), useServerQuests(player.day.date, !demo)).find((q) => q.id === id);
   const started = player.day.status[id];
   const [now, setNow] = useState(Date.now());
   const completing = useRef(false);
@@ -86,6 +87,7 @@ export default function QuestTimer() {
       recorder.current = null;
     }
     const reward = update((p) => completeQuest(p, id));
+    if (reward) reward.title = quest.title; // the Gemini title when the backend wrote one
     navigate('/dashboard', { state: { reward: reward && vitals ? { ...reward, vitals } : reward } });
   }
   function abandon() {
@@ -101,6 +103,7 @@ export default function QuestTimer() {
     <div className="fullscreen">
       <span className="mono" style={{ color: 'var(--blue)', fontSize: 13 }}>FOCUS MODE · {quest.name.toUpperCase()} · {PROOF_LABEL[quest.proof].toUpperCase()} PROOF</span>
       <h1 className="display" style={{ fontSize: 'clamp(24px, 4vw, 34px)', maxWidth: 720 }}>{quest.title}</h1>
+      {quest.description && <p className="soft" style={{ maxWidth: 620, margin: '-12px 0 0' }}>{quest.description}</p>}
       <div role="timer" aria-label="Time left" style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: 'clamp(72px, 16vw, 160px)', lineHeight: 1, color: finished ? 'var(--gold)' : 'var(--fg)' }}>
         {mmss(left)}
       </div>

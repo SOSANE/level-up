@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
 import { REWARD, addQuest, canAddQuest, sendToRift, today, todaysQuests } from '../api/game.js';
+import { useServerQuests, withServerText } from '../api/serverQuests.js';
 import Hud from '../components/Hud.jsx';
 import QuestCard from '../components/QuestCard.jsx';
 import RewardPopup from '../components/RewardPopup.jsx';
@@ -14,7 +15,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const reward = state?.reward;
-  const quests = todaysQuests(player);
+  const quests = withServerText(todaysQuests(player), useServerQuests(player.day.date, !demo));
   const status = player.day.status;
   const done = quests.slice(0, 4).filter((q) => status[q.id] === 'done').length;
   const riftActive = player.rift && player.rift.until > Date.now();

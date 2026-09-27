@@ -5,6 +5,7 @@ import { usePlayer } from '../api/player.jsx';
 import { CATEGORIES, MIN_CATEGORIES, PROOF_COLOR, PROOF_LABEL } from '../api/data.js';
 import { lookOf } from '../api/look.js';
 import { today } from '../api/game.js';
+import { syncCategories } from '../api/serverQuests.js';
 import AvatarBuilder from '../components/AvatarBuilder.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
 import { Bar } from '../components/ui.jsx';
@@ -20,7 +21,8 @@ export default function Onboarding() {
 
   const toggle = (id) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
-  function finish() {
+  async function finish() {
+    await syncCategories({ chosen, look, name: player.name, answers: player.answers });
     update((p) => {
       p.chosen = chosen;
       p.look = look;

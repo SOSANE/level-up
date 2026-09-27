@@ -19,6 +19,8 @@ async function request(path, { method = 'GET', body } = {}) {
 }
 
 export const api = {
+  onboard: (body) => request('/api/onboarding', { method: 'POST', body }),
+  updateMe: (body) => request('/api/me', { method: 'PATCH', body }),
   todaysQuests: () => request('/api/quests/today'),
   startQuest: (id) => request(`/api/quests/${id}/start`, { method: 'POST' }),
   cancelQuest: (id) => request(`/api/quests/${id}/cancel`, { method: 'POST' }),
