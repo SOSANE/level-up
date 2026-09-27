@@ -4,7 +4,14 @@ import { CATEGORY, MATERIAL, POTIONS, RARE } from './data.js';
 export const RANKS = [['E', 1], ['D', 5], ['C', 10], ['B', 20], ['A', 35], ['S', 50]];
 export const RANK_COLOR = { S: '#F2B84B', A: '#FF5C74', B: '#0ECCED', C: '#4D8FE8', D: '#B9D3E2', E: '#87A4B5' };
 export const XP_PER_LEVEL = 1000;
-export const REWARD = { required: { xp: 25, coins: 10, qty: 1 }, bonus: { xp: 40, coins: 20, qty: 2 }, extra: { xp: 20, coins: 8, qty: 1 }, clear: { xp: 50, coins: 25 } };
+// The 4 daily quests, hardest first; a required quest's EXP is its points (same as the backend's rules.js).
+export const DIFFICULTY = [
+  { id: 'hard', name: 'Hard', points: 50 },
+  { id: 'medium', name: 'Medium', points: 30 },
+  { id: 'medium-easy', name: 'Medium-easy', points: 20 },
+  { id: 'easy', name: 'Easy', points: 10 },
+];
+export const REWARD = { required: { coins: 10, qty: 1 }, extra: { xp: 20, coins: 8, qty: 1 }, clear: { xp: 50, coins: 25 } };
 export const RIFT = { xpPerDay: 150, coinsPerDay: 25, hoursPerDay: 1 };
 
 // Each verification type trains one stat; stats also rise with level.
@@ -26,16 +33,25 @@ export function gain(p, xp, coins) {
   }
 }
 
+// A window of 4 chosen categories, hardest first, moving back one category a day and wrapping around: with 10
+// categories day 1 is 1, 2, 3, 4 and day 2 is 10, 1, 2, 3. Extras continue the window. Same as the backend.
+export function questWindow(chosen, started, date, count) {
+  const n = chosen.length;
+  const off = ((-Math.round((new Date(date) - new Date(started)) / 864e5) % n) + n) % n;
+  return Array.from({ length: Math.min(n, count) }, (_, k) => chosen[(off + k) % n]); // never repeat a category in one day
+}
+
+const slotAt = (k) => (k < DIFFICULTY.length
+  ? { kind: 'required', difficulty: DIFFICULTY[k], xp: DIFFICULTY[k].points, ...REWARD.required }
+  : { kind: 'extra', difficulty: null, ...REWARD.extra });
+
 // ponytail: rotation stands in for Gemini-written quests; swap in an API call here when the backend exists.
 export function todaysQuests(p) {
-  const n = p.chosen.length;
-  if (!n) return [];
-  const off = Math.floor(new Date(today()).getTime() / 864e5) % n;
-  const count = Math.min(n, 5 + (p.day.extra || 0)); // never repeat a category in one day
-  return Array.from({ length: count }, (_, k) => {
-    const c = CATEGORY[p.chosen[(off + k) % n]];
-    const kind = k < 4 ? 'required' : k === 4 ? 'bonus' : 'extra';
-    return { ...c, kind, reward: { ...REWARD[kind], material: MATERIAL[c.proof] } };
+  if (!p.chosen.length) return [];
+  return questWindow(p.chosen, p.started, today(), DIFFICULTY.length + (p.day.extra || 0)).map((id, k) => {
+    const c = CATEGORY[id];
+    const { kind, difficulty, ...reward } = slotAt(k);
+    return { ...c, kind, difficulty, reward: { ...reward, material: MATERIAL[c.proof] } };
   });
 }
 
@@ -52,7 +68,7 @@ export function completeQuest(p, id) {
   const quests = todaysQuests(p);
   const q = quests.find((x) => x.id === id);
   if (!q || p.day.status[id] === 'done') return null;
-  const r = { category: q.name, title: q.title, xp: q.reward.xp, coins: q.reward.coins, material: q.reward.material, qty: q.reward.qty, barFrom: p.bars[id] || 0, levelFrom: p.level };
+  const r = { category: q.name, title: q.title, difficulty: q.difficulty, xp: q.reward.xp, coins: q.reward.coins, material: q.reward.material, qty: q.reward.qty, barFrom: p.bars[id] || 0, levelFrom: p.level };
   p.day.status[id] = 'done';
   p.bars[id] = Math.min(10, r.barFrom + 1);
   r.barTo = p.bars[id];
@@ -161,7 +177,6 @@ export function streak(p) {
 // Local stand-in for GET /api/stats (same row shape), rebuilt from the history calendar and the quest rotation.
 // Past days only record cleared/partial, so they count the minimum: 4 quests for a cleared day, 2 for a partial one.
 export function localDailyStats(p, days = 30) {
-  const n = p.chosen.length;
   const d = new Date();
   d.setDate(d.getDate() - (days - 1));
   const out = [];
@@ -171,9 +186,8 @@ export function localDailyStats(p, days = 30) {
     const row = { date, quests: 0, xp: 0, coins: 0, byProof: { VITALS: 0, FOCUS: 0, PHOTO: 0, HONOR: 0 }, result: h || null };
     const count = (qs) => qs.forEach((q) => { row.quests++; row.xp += q.reward.xp; row.coins += q.reward.coins; row.byProof[q.proof]++; });
     if (date === p.day?.date) count(todaysQuests(p).filter((q) => p.day.status[q.id] === 'done'));
-    else if (h && n) {
-      const off = Math.floor(new Date(date).getTime() / 864e5) % n;
-      count(Array.from({ length: h === 'd' ? 4 : 2 }, (_, k) => ({ proof: CATEGORY[p.chosen[(off + k) % n]].proof, reward: REWARD.required })));
+    else if (h && p.chosen.length) {
+      count(questWindow(p.chosen, p.started, date, h === 'd' ? 4 : 2).map((id, k) => ({ proof: CATEGORY[id].proof, reward: slotAt(k) })));
     }
     if (h === 'd') { row.xp += REWARD.clear.xp; row.coins += REWARD.clear.coins; }
     out.push(row);

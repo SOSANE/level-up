@@ -364,8 +364,10 @@ button.evo-card:hover { border-color: var(--line2); transform: translateY(-2px);
 
 /* tags */
 .tag { font-family: 'JetBrains Mono', monospace; letter-spacing: .1em; border: 1px solid transparent; }
-.tag-required { color: var(--blue); background: var(--blue-tint); border-color: color-mix(in srgb, var(--blue) 30%, transparent); }
-.tag-bonus { color: var(--gold); background: var(--gold-tint); border-color: color-mix(in srgb, var(--gold) 35%, transparent); }
+.tag-hard { color: var(--red); background: var(--red-tint); border-color: color-mix(in srgb, var(--red) 35%, transparent); }
+.tag-medium { color: var(--gold); background: var(--gold-tint); border-color: color-mix(in srgb, var(--gold) 35%, transparent); }
+.tag-medium-easy { color: var(--blue); background: var(--blue-tint); border-color: color-mix(in srgb, var(--blue) 30%, transparent); }
+.tag-easy { color: var(--muted); background: var(--panel); border-color: var(--line2); }
 .tag-extra { color: var(--violet); background: var(--violet-tint); border-color: color-mix(in srgb, var(--violet) 30%, transparent); }
 
 /* icon boxes: framed tiles with a notched corner, like the inventory */

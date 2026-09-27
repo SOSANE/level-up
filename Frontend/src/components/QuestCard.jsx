@@ -4,7 +4,6 @@ import { PROOF_COLOR, PROOF_LABEL } from '../api/data.js';
 import { STAT_OF } from '../api/game.js';
 import { CoinIcon, MaterialIcon, ProofChip } from './ui.jsx';
 
-const TAG = { required: 'REQUIRED', bonus: 'BONUS', extra: 'EXTRA' };
 
 export default function QuestCard({ quest, status }) {
   const active = typeof status === 'number';
@@ -20,7 +19,9 @@ export default function QuestCard({ quest, status }) {
 
       <div className="col quest-main">
         <span className="row mono wrap quest-meta">
-          <span className={`tag tag-${quest.kind}`}>{TAG[quest.kind]}</span>
+          {quest.difficulty
+            ? <span className={`tag tag-${quest.difficulty.id}`}>{quest.difficulty.name.toUpperCase()} · {quest.difficulty.points} PTS</span>
+            : <span className="tag tag-extra">EXTRA</span>}
           {quest.name.toUpperCase()} · {quest.mins} MIN · {PROOF_LABEL[quest.proof].toUpperCase()}
         </span>
         <h3 className="quest-title">{quest.title}</h3>

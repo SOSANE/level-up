@@ -41,7 +41,7 @@ export default function Onboarding() {
           <div className="row between wrap" style={{ alignItems: 'flex-end', gap: '24px 40px' }}>
             <div className="col" style={{ gap: 8 }}>
               <h1 className="page-title">Choose at least 10 categories</h1>
-              <p className="soft" style={{ fontSize: 16 }}>Each category gets its own progress bar. Your daily quests rotate through them.</p>
+              <p className="soft" style={{ fontSize: 16 }}>Each category gets its own progress bar. Your 4 daily quests rotate through them in the order you pick them, from hard to easy.</p>
             </div>
             <div className="col" style={{ width: 280, gap: 8 }}>
               <div className="row between" style={{ fontSize: 15 }}>
@@ -53,12 +53,13 @@ export default function Onboarding() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 10 }}>
             {CATEGORIES.map((c) => {
-              const on = chosen.includes(c.id);
+              const order = chosen.indexOf(c.id) + 1;
+              const on = order > 0;
               return (
                 <button key={c.id} className="tile" aria-pressed={on} onClick={() => toggle(c.id)}>
                   <span className="row between" style={{ width: '100%', alignItems: 'flex-start', gap: 8 }}>
                     <span style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.3 }}>{c.name}</span>
-                    <span className="checkbox" aria-hidden="true">{on ? '✓' : ''}</span>
+                    <span className="checkbox" aria-hidden="true">{on ? order : ''}</span>
                   </span>
                   <span className="mono proof-text" style={{ fontSize: 11, letterSpacing: '.08em', '--c': PROOF_COLOR[c.proof] }}>{PROOF_LABEL[c.proof].toUpperCase()} PROOF</span>
                 </button>
