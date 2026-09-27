@@ -12,10 +12,15 @@ import { createChapter } from '../services/story.js';
 import { addDays } from '../utils/dates.js';
 
 // forceOutcome: 'perfect' | 'fail' | undefined (demo mode only)
-export async function processDay(userId, { forceOutcome } = {}) {
+// before: only close the day if it is earlier than this date. Checked under the row lock, so two runs at once
+//   (startup catch-up and the midnight cron, or two servers) can't close a day that hasn't ended. Returns null if skipped.
+// quiet: skip the story chapter and the next day's quests (catch-up days that are closed straight away).
+// lostEarlier: EXP and coins lost on earlier catch-up days, added to the banishment chapter.
+export async function processDay(userId, { forceOutcome, before, quiet = false, lostEarlier = { xp: 0, coins: 0 } } = {}) {
   const closed = await withTransaction(async (db) => {
     const user = await usersDb.findById(userId, db, { forUpdate: true });
     const date = user.gameDate;
+    if (before && date >= before) return null;
     let quests = await questsDb.listForDay(user.id, date, db);
     if (forceOutcome === 'perfect') quests = quests.map((q) => (q.kind === 'required' ? { ...q, status: 'completed' } : q));
 
@@ -41,9 +46,13 @@ export async function processDay(userId, { forceOutcome } = {}) {
     return { user: saved, result, date, rift };
   });
 
+  if (!closed) return null;
+  if (quiet) return { date: closed.date, result: closed.result, rift: closed.rift };
+
   if (closed.rift) {
     await createChapter(closed.user, 'banished', {
-      expLost: closed.rift.lost.xp, coinsLost: closed.rift.lost.coins, banishHours: closed.rift.hours,
+      expLost: closed.rift.lost.xp + lostEarlier.xp, coinsLost: closed.rift.lost.coins + lostEarlier.coins,
+      banishHours: closed.rift.hours,
     });
   }
   await ensureQuestsForDay(closed.user);

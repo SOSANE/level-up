@@ -1,7 +1,7 @@
 // Builds each day's quests (4 required + 1 bonus, plus extras on request): Gemini titles first, category defaults if it fails.
 import * as questsDb from '../db/quests.js';
 import { CATEGORY } from '../game/content.js';
-import { questReward, questSlotsForDay, rankOf } from '../game/rules.js';
+import { questReward, questSlotsForDay, rankOf, slotsToAdd } from '../game/rules.js';
 import { generateQuests } from './gemini.js';
 
 async function draftQuests(user, slots) {
@@ -30,8 +30,7 @@ async function draftQuests(user, slots) {
 export async function ensureQuestsForDay(user) {
   const slots = questSlotsForDay(user.chosen, user.gameDate, user.extraToday);
   const existing = await questsDb.listForDay(user.id, user.gameDate);
-  const have = new Set(existing.map((q) => q.category));
-  const missing = slots.filter((s) => !have.has(s.category));
+  const missing = slotsToAdd(slots, existing);
   if (!missing.length) return existing;
   await questsDb.insertMany(await draftQuests(user, missing));
   return questsDb.listForDay(user.id, user.gameDate);

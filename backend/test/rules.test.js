@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CATEGORY_LIST } from '../src/game/content.js';
 import {
-  canAddQuest, completeQuest, dayResult, gain, nextRankLevel, questSlotsForDay, rankOf,
+  canAddQuest, completeQuest, dayResult, gain, nextRankLevel, questSlotsForDay, rankOf, slotsToAdd,
   sendToRift, streak, verifyVitals,
 } from '../src/game/rules.js';
 
@@ -99,4 +99,20 @@ test('vitals verification from stored readings', () => {
   assert.equal(verifyVitals('study', { samples: 900, avgFocus: 0.4 }).verified, false);
   assert.equal(verifyVitals('strength', { samples: 0 }).verified, false);
   assert.equal(verifyVitals('strength', null).verified, false);
+});
+
+test('quests added to a day that already has quests are extras, never required or bonus', () => {
+  const today = questSlotsForDay(chosen, '2026-09-26').map((s) => ({ ...s, status: 'pending' }));
+  assert.deepEqual(slotsToAdd(questSlotsForDay(chosen, '2026-09-26'), today), [], 'nothing missing');
+  assert.equal(slotsToAdd(questSlotsForDay(chosen, '2026-09-26'), []).length, 5, 'a new day gets all 5');
+
+  const extra = slotsToAdd(questSlotsForDay(chosen, '2026-09-26', 1), today);
+  assert.deepEqual(extra.map((s) => [s.position, s.kind]), [[5, 'extra']]);
+
+  // New categories picked mid-day: the rotation changes, but only the free slots are filled, after today's quests.
+  const swapped = [...chosen.slice(5), ...CATEGORY_LIST.slice(10, 15).map((c) => c.id)];
+  assert.deepEqual(slotsToAdd(questSlotsForDay(swapped, '2026-09-26'), today), [], 'no second set of required quests');
+  const more = slotsToAdd(questSlotsForDay(swapped, '2026-09-26', 1), today);
+  assert.equal(more.length, 1);
+  assert.deepEqual([more[0].position, more[0].kind], [5, 'extra']);
 });
