@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
 import { lookOf } from '../api/look.js';
-import { RANKS, RANK_COLOR, gain, rankOf } from '../api/game.js';
+import { RANKS, RANK_COLOR, claimGateReward, rankOf, today } from '../api/game.js';
 import Arena from '../components/arena/Arena.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
@@ -49,9 +49,10 @@ export default function Gate() {
   const [watchI, setWatchI] = useState(0);
   const [run, setRun] = useState(0); // bump to restart a fight
   const [result, setResult] = useState(null);
+  const [claimed, setClaimed] = useState(false); // this win paid out (false = practice, or today's reward was already taken)
   const [log, pushLog, clearLog] = useLog();
 
-  const start = (m, i = watchI) => { setMode(m); setWatchI(i); setResult(null); clearLog(); setRun((r) => r + 1); };
+  const start = (m, i = watchI) => { setMode(m); setWatchI(i); setResult(null); setClaimed(false); clearLog(); setRun((r) => r + 1); };
   const g = GATES[watchI];
 
   const runner = useMemo(() => ({ name: g.runner, color: RANK_COLOR[g.runnerRank], level: g.runnerLv, maxHp: 100 + g.runnerLv * 2, dmg: 0.55 + g.runnerLv / 60 }), [g]);
@@ -62,7 +63,7 @@ export default function Gate() {
 
   function endFight(r) {
     setResult(r);
-    if (r === 'won' && canEnter) update((p) => gain(p, REWARD.xp, REWARD.coins));
+    if (r === 'won' && canEnter) setClaimed(update((p) => claimGateReward(p, REWARD.xp, REWARD.coins)));
   }
 
   const aside = { flex: '0 1 380px', gap: 24 };
@@ -129,7 +130,7 @@ export default function Gate() {
                 </div>
               )}
               <button className="btn btn-gold" onClick={() => start('fight')}>{canEnter ? 'Enter Hollow Quarry' : 'Practice fight'}</button>
-              <span className="muted" style={{ fontSize: 13, textAlign: 'center' }}>{canEnter ? 'Rewards count toward your rank.' : 'Practice mode — nothing here is saved to your rank.'}</span>
+              <span className="muted" style={{ fontSize: 13, textAlign: 'center' }}>{canEnter ? (player.gateWonOn === today() ? 'Today’s reward is claimed. Fights until tomorrow are practice.' : 'The first win each day counts toward your rank.') : 'Practice mode — nothing here is saved to your rank.'}</span>
             </div>
           </SystemWindow>
         </aside>
@@ -195,10 +196,10 @@ export default function Gate() {
               <div className="panel-overlay" style={{ borderRadius: 0, background: 'color-mix(in srgb, var(--panel) 92%, transparent)' }}>
                 <span className="mono" style={{ fontSize: 13, color: result === 'won' ? 'var(--gold)' : 'var(--red)' }}>{result === 'won' ? '[GATE CLEARED]' : '[DEFEATED]'}</span>
                 <span className="display" style={{ fontWeight: 800, fontSize: 'clamp(28px, 5vw, 44px)' }}>
-                  {result === 'won' ? `+${REWARD.xp} EXP · +${REWARD.coins} coins` : 'Not strong enough. Yet.'}
+                  {result === 'won' ? (claimed || !canEnter ? `+${REWARD.xp} EXP · +${REWARD.coins} coins` : 'Gate cleared') : 'Not strong enough. Yet.'}
                 </span>
                 <span className="soft" style={{ fontSize: 16 }}>
-                  {result === 'won' ? (canEnter ? 'Added to your wallet.' : 'Practice reward — reach Rank C to earn it for real.') : 'Daily quests raise your level, and your level raises your damage.'}
+                  {result === 'won' ? (!canEnter ? 'Practice reward — reach Rank C to earn it for real.' : claimed ? 'Added to your wallet.' : 'Today’s gate reward is already claimed. Come back tomorrow.') : 'Daily quests raise your level, and your level raises your damage.'}
                 </span>
                 <button className="btn btn-light" onClick={() => start('fight')} autoFocus>{result === 'won' ? 'Run it again' : 'Try again'}</button>
               </div>

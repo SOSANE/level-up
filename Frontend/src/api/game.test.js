@@ -1,6 +1,6 @@
 // Run: npm test
 import assert from 'node:assert/strict';
-import { addQuest, buyPotion, canAddQuest, drinkPotion, checkMissedDays, completeQuest, localDailyStats, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
+import { addQuest, buyPotion, canAddQuest, claimGateReward, drinkPotion, checkMissedDays, completeQuest, localDailyStats, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
 import { CATEGORIES } from './data.js';
 import { showcasePlayer } from './demo.js';
 
@@ -90,5 +90,13 @@ assert.equal(week.at(-1).date, today());
 assert.ok(week.slice(0, -1).every((d) => d.result === 'd' && d.quests === 4), 'past showcase days are cleared');
 assert.equal(week.at(-1).quests, 2, 'today counts the quests done so far');
 assert.equal(week[0].xp, 4 * 25 + 50);
+
+// The arena reward pays once per day.
+const gp = player();
+assert.equal(claimGateReward(gp, 40, 30), true);
+assert.equal(claimGateReward(gp, 40, 30), false, 'second win the same day pays nothing');
+assert.deepEqual([gp.xp, gp.coins], [40, 80]);
+gp.gateWonOn = '2000-01-01';
+assert.equal(claimGateReward(gp, 40, 30), true, 'a new day pays again');
 
 console.log('game rules ok');

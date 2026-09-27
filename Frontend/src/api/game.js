@@ -80,6 +80,14 @@ export function completeQuest(p, id) {
   return r;
 }
 
+// Arena win reward, once per day (same rule as the backend's POST /api/gate/reward). Returns false if already claimed.
+export function claimGateReward(p, xp, coins) {
+  if (p.gateWonOn === today()) return false;
+  p.gateWonOn = today();
+  gain(p, xp, coins);
+  return true;
+}
+
 // Buy a potion from the marketplace. Returns false when the player can't afford it.
 export function buyPotion(p, id) {
   const it = POTIONS.find((x) => x.id === id);
