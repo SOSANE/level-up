@@ -503,6 +503,10 @@ button.inv-slot[aria-pressed="true"] { outline: 2px solid var(--c); outline-offs
   mask-composite: intersect; opacity: 0; transform: translateX(calc(-50% + 40px)) scale(1.03);
   transition: opacity .7s ease, transform .9s cubic-bezier(.2, .8, .2, 1); pointer-events: none; }
 .story-portrait.on { opacity: 1; transform: translateX(-50%); }
+/* chapters that stay inside the frame: fill the card's height, fade softly into its bottom edge */
+.story-portrait.inside { bottom: -32px; height: calc(100% + 36px + 32px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent), linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 82%, transparent), linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%); }
 
 /* chapter index on the right, like the ABOUT / AFFILIATION menu */
 .story-index { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; align-self: center; }
@@ -524,7 +528,7 @@ button.inv-slot[aria-pressed="true"] { outline: 2px solid var(--c); outline-offs
 @media (max-width: 900px) {
   .story-card { grid-template-columns: 1fr; margin-top: 24px; padding: 28px 22px; }
   .story-figure { order: -1; height: 340px; }
-  .story-portrait { bottom: 0; height: 100%; }
+  .story-portrait, .story-portrait.inside { bottom: 0; height: 100%; }
   .story-index { display: none; }
   .story-credit { text-align: center; }
 }

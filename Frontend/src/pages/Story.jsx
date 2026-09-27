@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
+import { SCENES, narration } from '../api/story.js';
 
-const SCENES = [
-{ img: 'scene-1', label: 'THE PLAN', alt: 'Jinwoo, calm and confident in a grey jacket', title: 'You were built different.', body: 'Up before the sun. First on every list. No excuses, no days off  just the grind, on repeat.', system: '[STATUS] Discipline: high · Energy: high · Streak: unbroken', color: 'var(--blue)' },
-{ img: 'scene-2', label: 'COMFORT', alt: 'Jinwoo in a worn hoodie, looking drained', title: 'Then the grind stopped.', body: 'The alarm became a suggestion. The gym bag became furniture. Tomorrow became the whole plan.', system: '[WARNING] Discipline falling. Quests ignored: too many to count.', color: 'var(--muted)' },
-{ img: 'scene-3', label: 'VILLAIN ARC', alt: 'Jinwoo with glowing eyes, in the middle of a fight', title: 'Everyone has a villain arc.', body: 'Yours didn\'t wear a mask. It looked like snoozed alarms and nights that blurred into nothing.', system: '[ALERT] Villain arc detected. Main character status: suspended.', color: 'var(--red)' },
-{ img: 'scene-4', label: 'RANK E', alt: 'Jinwoo at Rank E, bandaged and carrying a backpack', title: 'Every legend starts at zero.', body: 'Rank E. Weak. Overlooked. Underestimated. That\'s not your ceiling  that\'s your origin story.', system: '[NOTICE] Dormant potential found. It has been waiting for you.', color: 'var(--sapphire-light)' },
-{ img: 'scene-5', label: 'AWAKENING', alt: 'Jinwoo at Rank E in his blue hoodie, his future self standing behind him as a shadow with glowing eyes', title: 'This is your Awakening.', body: 'The System has chosen you. Every rep counts. Every quest matters. Let\u2019s see what you\u2019re really made of.', system: '[SYSTEM] You have been selected as a Player. Accept?', color: 'var(--gold)' },
-  ];
 const EMBERS = Array.from({ length: 22 }, (_, k) => ({
   left: `${(k * 37) % 100}%`, bottom: `${(k * 23) % 40}%`,
   animationDelay: `${((k * 0.61) % 6).toFixed(2)}s`, animationDuration: `${6 + (k % 5)}s`
@@ -23,13 +17,17 @@ export default function Story() {
   const s = SCENES[i];
   const last = i === SCENES.length - 1;
 
-  // Narrator voice via the browser's speech synthesis.
+  // Narrator: the recorded ElevenLabs voice (public/story/voice, made by `npm run voice`),
+  // or the browser's own speech voice for any chapter that has no recording yet.
   useEffect(() => {
-    if (!('speechSynthesis' in window)) return;
-    speechSynthesis.cancel();
-    if (!muted) speechSynthesis.speak(new SpeechSynthesisUtterance(`${s.title} ${s.body}`));
-    return () => speechSynthesis.cancel();
-  }, [i, muted, s]);
+    if (muted) return;
+    const tts = 'speechSynthesis' in window;
+    const audio = new Audio(`/story/voice/${s.img}.mp3`);
+    const speak = () => { if (tts) speechSynthesis.speak(new SpeechSynthesisUtterance(narration(s))); };
+    audio.addEventListener('error', speak, { once: true });
+    audio.play().catch(() => {}); // browsers may hold sound until the first click; missing files land in 'error'
+    return () => { audio.removeEventListener('error', speak); audio.pause(); if (tts) speechSynthesis.cancel(); };
+  }, [muted, s]);
 
   return (
     <div className="story-root" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', maxWidth: 1280, margin: '0 auto', '--story-c': s.color }}>
@@ -68,7 +66,7 @@ export default function Story() {
 
           <div className="story-figure">
             {SCENES.map((x, k) => ( // all mounted: switching chapters crossfades instead of reloading an image
-              <img key={x.img} className={`story-portrait${k === i ? ' on' : ''}`} src={`/story/${x.img}.jpg`}
+              <img key={x.img} className={`story-portrait${x.inside ? ' inside' : ''}${k === i ? ' on' : ''}`} src={`/story/${x.img}.jpg`}
                 alt={k === i ? x.alt : ''} aria-hidden={k !== i} />
             ))}
           </div>
