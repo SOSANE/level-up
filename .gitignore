@@ -3,3 +3,5 @@ dist
 .env
 audio-cache
 .DS_Store
+.env
+.env*.local
