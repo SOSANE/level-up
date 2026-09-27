@@ -3,7 +3,7 @@ import { query } from './pool.js';
 function fromRow(r) {
   if (!r) return null;
   return {
-    id: r.id, userId: r.user_id, date: r.date, category: r.category, kind: r.kind, position: r.position,
+    id: r.id, userId: r.user_id, date: r.date, category: r.category, kind: r.kind, position: r.position, difficulty: r.difficulty,
     title: r.title, description: r.description, durationMinutes: r.duration_minutes, proof: r.proof,
     status: r.status, startedAt: r.started_at, endsAt: r.ends_at, completedAt: r.completed_at,
     rewards: r.rewards, proofResult: r.proof_result,
@@ -18,10 +18,10 @@ export async function listForDay(userId, date, db) {
 // Duplicate (user, date, category) rows are skipped, so two requests generating the same day are harmless.
 export async function insertMany(quests, db) {
   if (!quests.length) return;
-  const cols = ['user_id', 'date', 'category', 'kind', 'position', 'title', 'description', 'duration_minutes', 'proof', 'rewards'];
+  const cols = ['user_id', 'date', 'category', 'kind', 'position', 'difficulty', 'title', 'description', 'duration_minutes', 'proof', 'rewards'];
   const params = [];
   const values = quests.map((q) => {
-    const row = [q.userId, q.date, q.category, q.kind, q.position, q.title, q.description, q.durationMinutes, q.proof, JSON.stringify(q.rewards)];
+    const row = [q.userId, q.date, q.category, q.kind, q.position, q.difficulty, q.title, q.description, q.durationMinutes, q.proof, JSON.stringify(q.rewards)];
     const start = params.length;
     params.push(...row);
     return `(${row.map((_, i) => `$${start + i + 1}${cols[i] === 'rewards' ? '::jsonb' : ''}`).join(', ')})`;

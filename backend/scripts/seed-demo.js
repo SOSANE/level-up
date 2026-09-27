@@ -5,7 +5,7 @@
 import { pool, withTransaction } from '../src/db/pool.js';
 import { config } from '../src/config.js';
 import { CATEGORY_LIST, MATERIAL } from '../src/game/content.js';
-import { REWARD } from '../src/game/rules.js';
+import { DIFFICULTY, REWARD } from '../src/game/rules.js';
 import { todayStr, addDays } from '../src/utils/dates.js';
 import { ensureQuestsForDay } from '../src/services/quests.js';
 import * as usersDb from '../src/db/users.js';
@@ -42,7 +42,8 @@ const userId = await withTransaction(async (db) => {
   );
 
   // Quests for the past 150 days, same rotation as the app: 100-day perfect streak, a few partial days before it.
-  // Cleared days: 4 required + bonus (the 4th required carries the daily clear bonus). Partial days: 2 quests.
+  // Cleared days: the 4 required quests, hard to easy (the 4th carries the daily clear bonus). Partial days: the first 2.
+  // The player started DAYS days ago, so day n back is day number DAYS - n of the rotation.
   await db.query(
     `WITH cats AS (
        SELECT id, proof, mins, title, idx - 1 AS i
@@ -53,25 +54,25 @@ const userId = await withTransaction(async (db) => {
        FROM generate_series(1, $7::int) AS n
      ),
      slots AS (
-       SELECT days.*, k, ((d - date '1970-01-01') + k) % 10 AS i
-       FROM days, generate_series(0, 4) AS k
-       WHERE k < CASE WHEN result = 'cleared' THEN 5 ELSE 2 END
+       SELECT days.*, k, (((k - ($7::int - n)) % 10) + 10) % 10 AS i
+       FROM days, generate_series(0, 3) AS k
+       WHERE k < CASE WHEN result = 'cleared' THEN 4 ELSE 2 END
      )
-     INSERT INTO quests (user_id, date, category, kind, position, title, description, duration_minutes, proof, status,
-                         started_at, ends_at, completed_at, rewards, proof_result)
-     SELECT $1, s.d, c.id, CASE WHEN s.k < 4 THEN 'required' ELSE 'bonus' END, s.k, c.title, c.title, c.mins, c.proof, 'completed',
+     INSERT INTO quests (user_id, date, category, kind, position, difficulty, title, description, duration_minutes, proof,
+                         status, started_at, ends_at, completed_at, rewards, proof_result)
+     SELECT $1, s.d, c.id, 'required', s.k, ($13::text[])[s.k + 1], c.title, c.title, c.mins, c.proof, 'completed',
             st, st + make_interval(mins => c.mins), st + make_interval(mins => c.mins),
             jsonb_build_object(
-              'xp', CASE WHEN s.k = 4 THEN $8::int WHEN s.k = 3 AND s.result = 'cleared' THEN $9::int + $10::int ELSE $9::int END,
-              'coins', CASE WHEN s.k = 4 THEN $11::int WHEN s.k = 3 AND s.result = 'cleared' THEN $12::int + $13::int ELSE $12::int END),
+              'xp', ($8::int[])[s.k + 1] + CASE WHEN s.k = 3 AND s.result = 'cleared' THEN $9::int ELSE 0 END,
+              'coins', $10::int + CASE WHEN s.k = 3 AND s.result = 'cleared' THEN $11::int ELSE 0 END),
             jsonb_build_object('verified', c.proof <> 'HONOR', 'seeded', true)
      FROM slots s
      JOIN cats c ON c.i = s.i
-     CROSS JOIN LATERAL (SELECT (s.d + time '07:00' + s.k * interval '2 hours') AT TIME ZONE $14 AS st) AS t`,
+     CROSS JOIN LATERAL (SELECT (s.d + time '07:00' + s.k * interval '2 hours') AT TIME ZONE $12 AS st) AS t`,
     [
       user.id, chosen.map((c) => c.id), chosen.map((c) => c.proof), chosen.map((c) => c.mins), chosen.map((c) => c.title),
-      today, DAYS, REWARD.bonus.xp, REWARD.required.xp, REWARD.clear.xp,
-      REWARD.bonus.coins, REWARD.required.coins, REWARD.clear.coins, tz,
+      today, DAYS, DIFFICULTY.map((d) => d.points), REWARD.clear.xp,
+      REWARD.required.coins, REWARD.clear.coins, tz, DIFFICULTY.map((d) => d.id),
     ]
   );
 
@@ -86,7 +87,7 @@ const userId = await withTransaction(async (db) => {
   await db.query(
     `INSERT INTO player_events (time, user_id, type, result, data)
      SELECT (date + time '12:00') AT TIME ZONE $3, $1, 'day_closed',
-            CASE WHEN count(*) >= 5 THEN 'cleared' ELSE 'partial' END, jsonb_build_object('done', count(*), 'seeded', true)
+            CASE WHEN count(*) >= 4 THEN 'cleared' ELSE 'partial' END, jsonb_build_object('done', count(*), 'seeded', true)
      FROM quests WHERE user_id = $1 AND date < $2 GROUP BY date`,
     [user.id, today, tz]
   );
