@@ -4,7 +4,6 @@ import { usePlayer } from './api/player.jsx';
 import Nav from './components/Nav.jsx';
 import DemoBanner from './components/DemoBanner.jsx';
 import AwakeningIntro from './components/AwakeningIntro.jsx';
-import Story from './pages/Story.jsx';
 import Login from './pages/Login.jsx';
 import Onboarding from './pages/Onboarding.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -40,7 +39,7 @@ export default function App() {
   return (
     <>
     <Routes>
-      <Route path="/" element={<Story />} />
+      <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route element={<RequirePlayer />}>
