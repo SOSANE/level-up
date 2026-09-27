@@ -52,6 +52,7 @@ export default function RewardPopup({ reward, onClose }) {
               <span className="muted" style={{ fontSize: 13 }}>Added to your inventory</span>
             </div>
           </div>
+          {reward.proofNote && <p className="sys-note" style={{ margin: 0 }}>{reward.proofNote}</p>}
           {reward.boost?.map((b) => <p key={b} className="sys-note" style={{ margin: 0, color: 'var(--gold)' }}>[{b}]</p>)}
           {reward.drops?.map((x) => (
             <div key={x.name} className="row drop-in reward-item" style={{ '--c': x.color }}>
