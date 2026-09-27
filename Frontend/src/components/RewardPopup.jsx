@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import SystemWindow from './SystemWindow.jsx';
 import { PROOF_COLOR } from '../api/data.js';
 import { STAT_OF } from '../api/game.js';
+import VitalsChart from './VitalsChart.jsx';
 import { Bar, CoinIcon, LootIcon, MaterialIcon } from './ui.jsx';
 
 // stat name -> its colour (Strength red, Intelligence blue, …)
@@ -65,6 +66,7 @@ export default function RewardPopup({ reward, onClose }) {
             <div className="row between" style={{ fontSize: 14 }}><span>{reward.category} path</span><span className="bracket">[{bar}/10]</span></div>
             <Bar pct={bar * 10} color="var(--blue)" h={8} label={`${reward.category} bar`} />
           </div>
+          {reward.vitals && <VitalsChart vitals={reward.vitals} />}
           <button className="btn btn-blue" onClick={onClose} autoFocus>Confirm</button>
         </div>
       </SystemWindow>
