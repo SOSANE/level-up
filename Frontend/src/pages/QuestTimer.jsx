@@ -1,19 +1,21 @@
 // Full-screen quest: countdown, focus mode with blocked apps, live heart rate for vitals quests.
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { usePlayer } from '../api/player.jsx';
 import { BLOCKED_APPS, PROOF_CTA, PROOF_LABEL } from '../api/data.js';
 import { completeQuest, mmss, todaysQuests } from '../api/game.js';
-import { subscribeHeartRate } from '../api/vitals.js';
+import { createVitalsRecorder, subscribeHeartRate } from '../api/vitals.js';
+import { startServerQuest } from '../api/client.js';
 import { Bar } from '../components/ui.jsx';
 
-function HeartRate() {
+function HeartRate({ onReading }) {
   const [reading, setReading] = useState(null);
   const [samples, setSamples] = useState([]);
   useEffect(() => subscribeHeartRate((r) => {
     setReading(r);
     setSamples((s) => [...s.slice(-29), r.bpm]);
-  }), []);
+    onReading?.(r);
+  }), [onReading]);
 
   const pts = samples.map((b, k) => `${k * 10},${60 - ((b - 50) / 120) * 60}`).join(' ');
   return (
@@ -44,6 +46,8 @@ export default function QuestTimer() {
   const started = player.day.status[id];
   const [now, setNow] = useState(Date.now());
   const completing = useRef(false);
+  const recorder = useRef(null);
+  const isVitals = quest?.proof === 'VITALS';
 
   // Starting is stored, so a refresh resumes the same countdown.
   useEffect(() => {
@@ -53,6 +57,14 @@ export default function QuestTimer() {
     const t = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(t);
   }, []);
+  // Vitals quests record every reading; with the backend on, they stream to the vitals_readings hypertable.
+  useEffect(() => {
+    if (!isVitals) return;
+    const r = createVitalsRecorder(startServerQuest(id));
+    recorder.current = r;
+    return () => { if (recorder.current === r && !completing.current) { r.discard(); recorder.current = null; } };
+  }, [id, isVitals]);
+  const onReading = useCallback((r) => recorder.current?.add(r), []);
 
   if (!quest) return <Navigate to="/dashboard" replace />;
   if (started === 'done') return completing.current ? null : <Navigate to="/dashboard" replace />;
@@ -61,12 +73,21 @@ export default function QuestTimer() {
   const left = typeof started === 'number' ? total - (now - started) / 1000 : total;
   const finished = left <= 0;
 
-  function complete() {
+  async function complete() {
+    if (completing.current) return;
     completing.current = true; // keep the done-redirect from replacing the navigation that carries the reward
+    let vitals;
+    if (recorder.current) {
+      const series = recorder.current.series();
+      vitals = { series, questId: await recorder.current.finish() };
+      recorder.current = null;
+    }
     const reward = update((p) => completeQuest(p, id));
-    navigate('/dashboard', { state: { reward } });
+    navigate('/dashboard', { state: { reward: reward && vitals ? { ...reward, vitals } : reward } });
   }
   function abandon() {
+    recorder.current?.discard();
+    recorder.current = null;
     update((p) => { delete p.day.status[id]; });
     navigate('/dashboard');
   }
@@ -80,7 +101,7 @@ export default function QuestTimer() {
       </div>
       <div style={{ width: 520, maxWidth: '100%' }}><Bar pct={(1 - left / total) * 100} h={8} color={finished ? 'var(--gold)' : 'var(--blue)'} label="Quest progress" /></div>
 
-      {quest.proof === 'VITALS' && <HeartRate />}
+      {isVitals && <HeartRate onReading={onReading} />}
 
       <div className="col" style={{ alignItems: 'center', gap: 10 }}>
         <span className="mono dim">BLOCKED UNTIL YOU FINISH</span>

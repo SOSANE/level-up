@@ -1,6 +1,6 @@
 // Run: npm test
 import assert from 'node:assert/strict';
-import { addQuest, buyPotion, canAddQuest, drinkPotion, checkMissedDays, completeQuest, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
+import { addQuest, buyPotion, canAddQuest, drinkPotion, checkMissedDays, completeQuest, localDailyStats, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
 import { CATEGORIES } from './data.js';
 import { showcasePlayer } from './demo.js';
 
@@ -68,7 +68,6 @@ assert.ok(streak(demo) >= 100, `streak ${streak(demo)}`);
 assert.equal(Object.values(demo.day.status).filter((v) => v === 'done').length, 2);
 assert.equal(JSON.stringify(real), before, 'real player unchanged');
 
-
 // Potions: buy with coins, drink from the inventory.
 {
   const q = showcasePlayer({});
@@ -83,4 +82,13 @@ assert.equal(JSON.stringify(real), before, 'real player unchanged');
   assert.equal(drinkPotion(q, 'revival'), false, 'no Rift to escape');
   sendToRift(q); assert.ok(drinkPotion(q, 'revival')); assert.equal(q.rift, null);
 }
+
+// Local 30-day stats (same shape as GET /api/stats): the showcase's perfect streak shows up as cleared days.
+const week = localDailyStats(demo, 30);
+assert.equal(week.length, 30);
+assert.equal(week.at(-1).date, today());
+assert.ok(week.slice(0, -1).every((d) => d.result === 'd' && d.quests === 4), 'past showcase days are cleared');
+assert.equal(week.at(-1).quests, 2, 'today counts the quests done so far');
+assert.equal(week[0].xp, 4 * 25 + 50);
+
 console.log('game rules ok');
