@@ -19,10 +19,10 @@ export default function Customize() {
 
   return (
     <div className="page col" style={{ gap: 28 }}>
-      <PageHeader eyebrow="CHARACTER" color="var(--crimson-soft)" title="Customize your mini self"
+      <PageHeader eyebrow="CHARACTER" color="var(--violet-soft)" title="Customize your mini self"
         sub="Your look stays yours. The outfit and aura evolve on their own as you rank up."
         action={<div className="row"><button className="btn btn-ghost" onClick={() => navigate(-1)}>Cancel</button><button className="btn btn-blue" onClick={save}>Save look</button></div>} />
-      <SystemWindow title="CHARACTER CREATION" tone="crimson" icon={null}>
+      <SystemWindow title="CHARACTER CREATION" tone="violet" icon={null}>
         <AvatarBuilder look={look} onChange={setLook} level={player.level} premium={(player.items.outfit || 0) > 0} />
       </SystemWindow>
     </div>

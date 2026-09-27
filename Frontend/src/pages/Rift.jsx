@@ -5,7 +5,7 @@ import { usePlayer } from '../api/player.jsx';
 import { BLOCKED_APPS } from '../api/data.js';
 import { lookOf, stageOf } from '../api/look.js';
 import MiniSelf from '../components/MiniSelf.jsx';
-import { RANK_COLOR, mmss } from '../api/game.js';
+import { RANK_COLOR, drinkPotion, mmss } from '../api/game.js';
 import SystemWindow from '../components/SystemWindow.jsx';
 
 function TrappedCharacter({ look, stage }) {
@@ -14,7 +14,7 @@ function TrappedCharacter({ look, stage }) {
       <path className="rift-glow" d="M150 10 L205 70 L185 120 L240 170 L195 230 L215 300 L150 270 L85 305 L100 235 L55 175 L110 125 L90 65 Z"
         fill="var(--red-tint)" stroke="var(--red)" strokeWidth="3" strokeLinejoin="round" />
       <path d="M150 40 L185 85 L170 125 L210 170 L175 215 L185 270 L150 250 L115 272 L125 218 L90 172 L130 128 L115 82 Z" fill="var(--bg)" />
-      <g opacity="0.6"><MiniSelf look={look} stage={stage} x={110} y={104} size={80} /></g>
+      <g opacity="0.6"><MiniSelf look={look} stage={stage} x={113} y={118} size={80} /></g>
       {[122, 138, 154, 170, 186].map((x) => <line key={x} x1={x} y1="110" x2={x} y2="205" stroke="var(--red)" strokeWidth="2.5" opacity="0.8" />)}
       <line x1="112" y1="110" x2="194" y2="110" stroke="var(--red)" strokeWidth="3" />
       <line x1="112" y1="205" x2="194" y2="205" stroke="var(--red)" strokeWidth="3" />
@@ -50,7 +50,7 @@ export default function Rift() {
       </span>
       <TrappedCharacter look={lookOf(player)} stage={stageOf(player.level)} />
       <h1 className="display" style={{ fontSize: 'clamp(28px, 4vw, 40px)' }}>{player.name} is trapped in the Rift.</h1>
-      <div role="timer" aria-label="Time until release" style={{ fontFamily: 'Oxanium, sans-serif', fontWeight: 800, fontSize: 'clamp(56px, 12vw, 110px)', lineHeight: 1 }}>
+      <div role="timer" aria-label="Time until release" style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 800, fontSize: 'clamp(56px, 12vw, 110px)', lineHeight: 1 }}>
         {free ? '00:00' : mmss(left)}
       </div>
 
@@ -76,6 +76,11 @@ export default function Rift() {
       </div>
 
       <p className="soft" style={{ fontSize: 16, maxWidth: 560, lineHeight: 1.5 }}>Finish today’s quests so tomorrow’s banishment doesn’t grow by another hour.</p>
+      {!free && player.items.revival > 0 && (
+        <button className="btn-danger" style={{ alignSelf: "center" }} onClick={() => { update((p) => { drinkPotion(p, 'revival'); }); navigate('/dashboard'); }}>
+          Drink a Revival draught ({player.items.revival} left) and escape
+        </button>
+      )}
       {free
         ? <button className="btn btn-gold" onClick={leave}>Escape the Rift</button>
         : <button className="btn btn-light" onClick={() => navigate('/dashboard')}>Back to today’s quests</button>}

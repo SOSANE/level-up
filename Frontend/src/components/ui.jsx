@@ -27,6 +27,23 @@ export function MaterialIcon({ color, size = 28 }) {
   );
 }
 
+// Rare drop icons: beast core, rune stone, gate key, shadow essence.
+const LOOT_PATHS = {
+  core: <><circle cx="12" cy="12" r="8" fillOpacity=".25" /><circle cx="12" cy="12" r="3.5" /><path d="M12 4v2M12 18v2M4 12h2M18 12h2" fill="none" /></>,
+  rune: <><path d="M12 2.5 20 7v10l-8 4.5L4 17V7Z" fillOpacity=".25" /><path d="M10 8v8M10 12l4-4M10 12l4 4" fill="none" /></>,
+  key: <><circle cx="8" cy="12" r="4.5" fillOpacity=".25" /><path d="M12.5 12H21M18 12v3M21 12v2" fill="none" /></>,
+  fang: <><path d="M7 4h10l-2 7-3 10-3-10Z" fillOpacity=".25" /><path d="M12 6v8" fill="none" /></>,
+  sigil: <><path d="M4 18 5.5 8l4 4L12 5l2.5 7 4-4L20 18Z" fillOpacity=".25" /><path d="M4 21h16" fill="none" /></>,
+  essence: <><path d="M12 2c2 4 6 6.5 6 11a6 6 0 0 1-12 0c0-2.4 1-4 2.3-5.3.3 2.2 1.4 3.3 2.7 3.3 0-3.8-.6-6 1-9Z" fillOpacity=".25" /><circle cx="12" cy="15" r="1.6" /></>
+};
+export function LootIcon({ kind, color, size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {LOOT_PATHS[kind]}
+    </svg>
+  );
+}
+
 export function Potion({ color, size = 56 }) {
   return (
     <svg width={size} height={size * 1.25} viewBox="0 0 40 50" aria-hidden="true">

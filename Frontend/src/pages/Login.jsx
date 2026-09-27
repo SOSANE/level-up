@@ -7,8 +7,8 @@ const QUESTIONS = [
   { id: 'time', text: 'When do you have the most energy?', opts: ['Early morning', 'Afternoon', 'Evening', 'Late night'] },
   { id: 'len', text: 'How long can you give one quest on a normal day?', opts: ['10 minutes', '15 minutes', '30 minutes', '45+ minutes'] },
   { id: 'goal', text: 'What do you want to change first?', opts: ['Body and health', 'Focus and study', 'Home and routine', 'Social life'] },
-  { id: 'topic', text: 'Which of these pulls you in the most?', opts: ['Gym', 'Anime', 'Music', 'Books', 'Nature walks'] },
-  { id: 'fitness', text: 'How active are you right now?', opts: ['Barely moving', 'I walk sometimes', 'Workout 1–2× a week', 'Workout 3+× a week'] },
+  { id: 'topic', text: 'Which of these pulls you in the most?', opts: ['Gym', 'Anime & Shows', 'Music', 'Books', 'Nature walks'] },
+  { id: 'fitness', text: 'How active are you right now?', opts: ['Barely moving', 'I walk sometimes', 'Workout 1–2 × a week', 'Workout 3+ × a week'] },
   { id: 'place', text: 'Where can you train?', opts: ['A gym', 'At home', 'Outdoors', 'Nowhere yet'] },
   { id: 'sleep', text: 'When do you usually fall asleep?', opts: ['Before 11 pm', '11 pm – 1 am', 'After 1 am', 'Different every night'] },
   { id: 'screen', text: 'Daily screen time outside work or school?', opts: ['Under 2 hours', '2–4 hours', '4–6 hours', '6+ hours'] },
@@ -25,7 +25,7 @@ const MSGS = {
   quiz: '[SYSTEM] Answer honestly. The System adapts to the truth, not to what sounds good.',
   done: '[SYSTEM] Assessment complete. Rank E assigned. Everyone starts somewhere.'
 };
-const DIFFICULTY = { 'Barely moving': 'Gentle', 'I walk sometimes': 'Easy', 'Workout 1–2× a week': 'Normal', 'Workout 3+× a week': 'Hard' };
+const DIFFICULTY = { 'Barely moving': 'Gentle', 'I walk sometimes': 'Easy', 'Workout 1–2 × a week': 'Normal', 'Workout 3+ × a week': 'Hard' };
 
 export default function Login() {
   const { player, update } = usePlayer();
@@ -67,7 +67,7 @@ export default function Login() {
               <p className="soft" style={{ fontSize: 17, lineHeight: 1.55 }}>One account. Your quests, your bars, your rank — saved wherever you sign in.</p>
             </div>
             {/* ponytail: demo sign-in; plug Auth0's Google connection in here when there's a backend */}
-            <button className="btn" onClick={() => setStep('auth')} style={{ height: 56, background: '#fff', color: '#1F1F1F', fontSize: 17, gap: 12 }}>
+            <button className="btn" onClick={() => setStep('auth')} style={{ height: 56, background: '#fff', color: 'var(--fg)', fontSize: 17, gap: 12, border: '1px solid var(--line2)', boxShadow: 'var(--shadow)' }}>
               <span className="g-mark">G</span>Continue with Google
             </button>
             <p className="muted" style={{ fontSize: 13 }}>Demo sign-in · progress is saved in this browser only.</p>
@@ -100,10 +100,10 @@ export default function Login() {
           return (
             <div className="col" style={{ width: 640, maxWidth: '100%', gap: 28 }}>
               <div className="row between">
-                <span className="mono" style={{ color: 'var(--crimson)' }}>GEMINI · ADAPTIVE ASSESSMENT</span>
+                <span className="mono" style={{ color: 'var(--violet)' }}>GEMINI · ADAPTIVE ASSESSMENT</span>
                 <span className="mono muted">{q + 1} / {QUESTIONS.length}</span>
               </div>
-              <Bar pct={((q + (cur ? 1 : 0)) / QUESTIONS.length) * 100} color="var(--crimson)" label="Assessment progress" />
+              <Bar pct={((q + (cur ? 1 : 0)) / QUESTIONS.length) * 100} color="var(--violet)" label="Assessment progress" />
               <h2 className="display" style={{ fontSize: 32, lineHeight: 1.2 }}>{Q.text}</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
                 {Q.opts.map((o) => (

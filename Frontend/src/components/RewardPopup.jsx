@@ -1,8 +1,13 @@
 // Shown after a quest: coins count up, the material drops in, the category bar fills.
 import { useEffect, useState } from 'react';
 import SystemWindow from './SystemWindow.jsx';
+import { PROOF_COLOR } from '../api/data.js';
+import { STAT_OF } from '../api/game.js';
 import VitalsChart from './VitalsChart.jsx';
-import { Bar, CoinIcon, MaterialIcon } from './ui.jsx';
+import { Bar, CoinIcon, LootIcon, MaterialIcon } from './ui.jsx';
+
+// stat name -> its colour (Strength red, Intelligence blue, …)
+const STAT_COLOR = Object.fromEntries(Object.entries(STAT_OF).map(([proof, name]) => [name, PROOF_COLOR[proof]]));
 
 export default function RewardPopup({ reward, onClose }) {
   const [coins, setCoins] = useState(0);
@@ -23,28 +28,46 @@ export default function RewardPopup({ reward, onClose }) {
 
   return (
     <div className="overlay dim-bg" role="dialog" aria-modal="true" aria-labelledby="reward-title">
-      <SystemWindow title="QUEST COMPLETE" tone="gold" style={{ width: 460, maxWidth: '100%', textAlign: 'left' }}>
-        <div className="col" style={{ gap: 20 }}>
-          <p className="sys-note">[{reward.category} has been cleared.{reward.cleared ? ' Daily bonus earned.' : ''}]</p>
-          <h3 id="reward-title" className="display" style={{ fontSize: 26, textAlign: 'center' }}>{reward.category}</h3>
-          <div className="row between">
-            <span className="row display gold" style={{ fontSize: 44, gap: 10 }} aria-live="polite"><CoinIcon size={34} />+{coins}</span>
-            <span className="soft" style={{ fontSize: 16 }}>+{reward.xp} EXP</span>
+      <SystemWindow title="NOTIFICATION" style={{ width: 480, maxWidth: '100%' }}>
+        <div className="col" style={{ gap: 18 }}>
+          <p id="reward-title" className="notify-text">
+            Daily Quest “{reward.title || reward.category}” has been completed.
+            {reward.cleared && <><br />All required quests cleared — daily bonus granted.</>}
+          </p>
+          {reward.levelTo > reward.levelFrom && (
+            <div className="level-up" role="status">
+              <span className="level-up-word">LEVEL UP</span>
+              <span className="level-up-lv">Lv. {reward.levelTo} <span aria-hidden="true">↑</span></span>
+            </div>
+          )}
+          <div className="reward-grid">
+            <div className="reward-cell"><span className="row" style={{ gap: 8 }} aria-live="polite"><CoinIcon size={24} /><b className="gold">+{coins}</b></span><small>coins</small></div>
+            <div className="reward-cell"><b>+{reward.xp}</b><small>EXP</small></div>
+            {reward.stat && <div className="reward-cell" style={{ '--c': STAT_COLOR[reward.stat] }}><b className="stat-up">+2</b><small>{reward.stat.toUpperCase()}</small></div>}
           </div>
-          <div className="row drop-in" style={{ gap: 14, padding: '12px 14px', borderRadius: 'var(--r-md)', background: 'var(--deep)' }}>
-            <MaterialIcon color={reward.material.color} size={40} />
+          <div className="row drop-in reward-item">
+            <MaterialIcon color={reward.material.color} size={38} />
             <div className="col" style={{ gap: 2 }}>
               <b>{reward.qty}× {reward.material.name}</b>
-              <span className="muted" style={{ fontSize: 13 }}>Material added to your inventory</span>
+              <span className="muted" style={{ fontSize: 13 }}>Added to your inventory</span>
             </div>
           </div>
+          {reward.boost?.map((b) => <p key={b} className="sys-note" style={{ margin: 0, color: 'var(--gold)' }}>[{b}]</p>)}
+          {reward.drops?.map((x) => (
+            <div key={x.name} className="row drop-in reward-item" style={{ '--c': x.color }}>
+              <LootIcon kind={x.kind} color={x.color} size={38} />
+              <div className="col" style={{ gap: 2 }}>
+                <b>RARE DROP · 1× {x.name}</b>
+                <span className="muted" style={{ fontSize: 13 }}>{x.desc}</span>
+              </div>
+            </div>
+          ))}
           <div className="col" style={{ gap: 6 }}>
-            <div className="row between" style={{ fontSize: 14 }}><span>{reward.category} bar</span><span className="muted">{bar} / 10</span></div>
-            <Bar pct={bar * 10} color="var(--gold)" h={10} label={`${reward.category} bar`} />
+            <div className="row between" style={{ fontSize: 14 }}><span>{reward.category} path</span><span className="bracket">[{bar}/10]</span></div>
+            <Bar pct={bar * 10} color="var(--blue)" h={8} label={`${reward.category} bar`} />
           </div>
           {reward.vitals && <VitalsChart vitals={reward.vitals} />}
-          {reward.stat && <p className="sys-note" style={{ margin: 0 }}>[{reward.stat} +2]</p>}
-          <button className="btn btn-light" onClick={onClose} autoFocus>Continue</button>
+          <button className="btn btn-blue" onClick={onClose} autoFocus>Confirm</button>
         </div>
       </SystemWindow>
     </div>

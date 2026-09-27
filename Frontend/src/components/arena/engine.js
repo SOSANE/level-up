@@ -202,7 +202,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     for (const sh of s.shots) {
       sh.x += sh.vx * dt;
       sh.life -= dt;
-      if (Math.random() < 0.8) s.parts.push({ x: sh.x, y: sh.y + rand(-20, 20), vx: -sh.vx * 0.1, vy: rand(-40, 40), life: 0.3, max: 0.3, color: '#0ECCED', size: rand(2, 4) });
+      if (Math.random() < 0.8) s.parts.push({ x: sh.x, y: sh.y + rand(-20, 20), vx: -sh.vx * 0.1, vy: rand(-40, 40), life: 0.3, max: 0.3, color: '#4FB8FF', size: rand(2, 4) });
       if (!sh.hit && Math.abs(sh.x - b.x) < 70 && b.hp > 0) { sh.hit = true; sh.life = 0; hitBoss(roll(26, 34) * p.dmg, true, 'Surge'); }
     }
     s.shots = s.shots.filter((sh) => sh.life > 0 && sh.x > -50 && sh.x < W + 50);
@@ -459,22 +459,22 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
       ctx.strokeStyle = rgba(p.combo === 3 ? '#F2B84B' : f.color, 0.55); ctx.lineWidth = p.combo === 3 ? 14 : 9;
       ctx.beginPath(); ctx.arc(sx, sy, 62, Math.min(from, a), Math.max(from, a)); ctx.stroke();
     }
-    ctx.strokeStyle = st === 'skill' ? '#9AEBFA' : '#B9D3E2'; ctx.lineWidth = 4;
-    if (st === 'skill' && !ghost) { ctx.shadowColor = '#0ECCED'; ctx.shadowBlur = 16; }
+    ctx.strokeStyle = st === 'skill' ? '#BFE3FF' : '#B9D3E2'; ctx.lineWidth = 4;
+    if (st === 'skill' && !ghost) { ctx.shadowColor = '#4FB8FF'; ctx.shadowBlur = 16; }
     ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + Math.cos(a) * 54, hy + Math.sin(a) * 54); ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.restore();
   }
 
   function drawHud(ctx) {
-    ctx.font = '700 15px Oxanium, sans-serif';
+    ctx.font = '700 15px Rajdhani, sans-serif';
     ctx.textBaseline = 'alphabetic';
     // fighter
     ctx.fillStyle = 'rgba(14,26,48,0.88)';
     ctx.beginPath(); ctx.roundRect(16, 14, 264, 66, 12); ctx.fill();
     ctx.fillStyle = '#EDF4F9'; ctx.textAlign = 'left';
     ctx.fillText(`${p.name} · Lv ${p.level}`, 30, 36);
-    bar(ctx, 30, 46, 236, 9, p.hp / p.maxHp, '#0ECCED');
+    bar(ctx, 30, 46, 236, 9, p.hp / p.maxHp, '#4FB8FF');
     bar(ctx, 30, 61, 236, 7, p.mp / 100, p.mp >= 30 ? '#4D8FE8' : '#043780');
     // boss
     ctx.fillStyle = 'rgba(14,26,48,0.88)';
@@ -506,7 +506,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     }
     for (const sh of s.shots) {
       ctx.save(); ctx.translate(sh.x, sh.y); ctx.scale(Math.sign(sh.vx), 1);
-      ctx.shadowColor = '#0ECCED'; ctx.shadowBlur = 24; ctx.strokeStyle = '#9AEBFA'; ctx.lineWidth = 6;
+      ctx.shadowColor = '#4FB8FF'; ctx.shadowBlur = 24; ctx.strokeStyle = '#BFE3FF'; ctx.lineWidth = 6;
       ctx.beginPath(); ctx.arc(-20, 0, 42, -1.1, 1.1); ctx.stroke();
       ctx.restore();
     }
@@ -517,7 +517,7 @@ export function createGame({ boss, fighter, ai, onLog = () => {}, onEnd = () => 
     ctx.globalAlpha = 1;
     for (const t of s.texts) {
       ctx.globalAlpha = Math.min(1, t.life * 2);
-      ctx.font = `800 ${t.big ? 30 : 22}px Oxanium, sans-serif`; ctx.textAlign = 'center';
+      ctx.font = `800 ${t.big ? 30 : 22}px Rajdhani, sans-serif`; ctx.textAlign = 'center';
       ctx.lineWidth = 4; ctx.strokeStyle = '#030812'; ctx.strokeText(t.text, t.x, t.y);
       ctx.fillStyle = t.color; ctx.fillText(t.text, t.x, t.y);
     }

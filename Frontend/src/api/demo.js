@@ -21,9 +21,9 @@ export function showcasePlayer(real = {}) {
     onboarded: true, demo: true,
     level: DEMO_LEVEL, xp: 640, coins: 4820, questsDone: 612,
     chosen, bars: Object.fromEntries(chosen.map((id, k) => [id, fill[k % fill.length]])),
-    materials: { 'Iron ore': 148, 'Spirit herb': 173, 'Mana crystal': 161, 'Oath token': 139 },
+    materials: { 'Iron ore': 148, 'Spirit herb': 173, 'Mana crystal': 161, 'Oath token': 139, 'Beast core': 122, 'Rune stone': 61, 'Gate key': 24, 'Shadow essence': 118, 'Demon fang': 12, 'Monarch sigil': 6 },
     stats: { VITALS: 150, FOCUS: 165, PHOTO: 170, HONOR: 128 },
-    items: { freeze: 2, shield: 1, outfit: 1 },
+    items: { freeze: 2, shield: 1, outfit: 1, growth: 3, haste: 2, fortune: 2, revival: 1 }, buffs: {},
     history, started: daysAgo(150), lastCheck: today(), rift: null,
     day: { date: today(), status: {}, cleared: false }
   };

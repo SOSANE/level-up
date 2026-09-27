@@ -7,6 +7,7 @@ import QuestCard from '../components/QuestCard.jsx';
 import RewardPopup from '../components/RewardPopup.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import SystemWindow from '../components/SystemWindow.jsx';
+import WarningBox from '../components/WarningBox.jsx';
 
 export default function Dashboard() {
   const { player, update } = usePlayer();
@@ -68,10 +69,12 @@ export default function Dashboard() {
             )}
             <div className="col warning-block">
               <p><b>WARNING:</b> Failure to complete the daily quest will result in an appropriate penalty.</p>
-              <p className="muted" style={{ fontSize: 13 }}>Fewer than 4 → banished to the Rift: −150 EXP, −25 coins, apps locked 1 hour (+1 hour per missed day in a row).</p>
-              <button className="btn-danger" style={{ alignSelf: 'center' }} onClick={() => { update((p) => sendToRift(p, 1)); }}>Demo: fail today</button>
             </div>
           </SystemWindow>
+          <WarningBox lead="Miss the 4 required quests and you're banished to the Rift."
+            detail="−150 EXP · −25 coins · apps locked 1 hour · +1 hour for every missed day in a row">
+            <button className="btn-danger" style={{ marginTop: 6 }} onClick={() => { update((p) => sendToRift(p, 1)); }}>Demo: fail today</button>
+          </WarningBox>
         </div>
         <Hud player={player} highlight={reward ? quests.find((q) => q.name === reward.category)?.id : undefined} />
       </div>
