@@ -9,10 +9,11 @@ export function setTokenGetter(fn) { getToken = fn; }
 
 async function request(path, { method = 'GET', body } = {}) {
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const form = body instanceof FormData; // multipart: the browser sets the Content-Type with its boundary
+  if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
   if (getToken) headers.Authorization = `Bearer ${await getToken()}`;
   else if (import.meta.env.VITE_DEV_USER) headers['x-dev-user'] = import.meta.env.VITE_DEV_USER; // backend AUTH_DISABLED=true only
-  const res = await fetch(BASE + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const res = await fetch(BASE + path, { method, headers, body: body === undefined || form ? body : JSON.stringify(body) });
   const data = await res.json().catch(() => null);
   if (!res.ok) throw Object.assign(new Error(data?.error || `Request failed (${res.status})`), { status: res.status, data });
   return data;
@@ -25,6 +26,11 @@ export const api = {
   startQuest: (id) => request(`/api/quests/${id}/start`, { method: 'POST' }),
   cancelQuest: (id) => request(`/api/quests/${id}/cancel`, { method: 'POST' }),
   uploadVitals: (id, readings) => request(`/api/quests/${id}/vitals`, { method: 'POST', body: { readings } }),
+  completeWithPhoto: (id, photo) => {
+    const body = new FormData();
+    body.append('photo', photo);
+    return request(`/api/quests/${id}/complete`, { method: 'POST', body });
+  },
   questVitals: (id) => request(`/api/quests/${id}/vitals`),
   stats: (days = 30) => request(`/api/stats?days=${days}`),
   history: (month) => request(`/api/stats/history?month=${month}`),
