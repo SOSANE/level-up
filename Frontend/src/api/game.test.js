@@ -1,6 +1,6 @@
 // Run: npm test
 import assert from 'node:assert/strict';
-import { addQuest, buyPotion, canAddQuest, claimGateReward, drinkPotion, checkMissedDays, completeQuest, localDailyStats, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
+import { addQuest, buyPotion, canAddQuest, claimGateReward, startDay, drinkPotion, checkMissedDays, completeQuest, localDailyStats, rankOf, sendToRift, stats, streak, today, todaysQuests } from './game.js';
 import { CATEGORIES } from './data.js';
 import { showcasePlayer } from './demo.js';
 
@@ -98,5 +98,15 @@ assert.equal(claimGateReward(gp, 40, 30), false, 'second win the same day pays n
 assert.deepEqual([gp.xp, gp.coins], [40, 80]);
 gp.gateWonOn = '2000-01-01';
 assert.equal(claimGateReward(gp, 40, 30), true, 'a new day pays again');
+
+// A tab left open past midnight: yesterday's statuses don't carry over, and the missed day counts.
+const yesterday = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return today(d); })();
+const op = player();
+todaysQuests(op).slice(0, 3).forEach((q) => completeQuest(op, q.id));
+Object.assign(op, { lastCheck: yesterday, day: { ...op.day, date: yesterday } });
+assert.equal(startDay(op), true);
+assert.deepEqual(op.day, { date: today(), status: {}, cleared: false });
+assert.ok(op.rift, 'the unfinished day sends the player to the Rift');
+assert.equal(startDay(op), false, 'same day: nothing changes');
 
 console.log('game rules ok');

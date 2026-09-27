@@ -123,6 +123,14 @@ export function sendToRift(p, days = 1) {
   };
 }
 
+// Starts a new game day if the date changed (on load, and when a tab stays open past midnight). Returns true if it did.
+export function startDay(p) {
+  const fresh = !p.day || p.day.date !== today();
+  if (fresh) p.day = { date: today(), status: {}, cleared: false };
+  checkMissedDays(p);
+  return fresh;
+}
+
 // On load: any day since the last check without all 4 required quests counts as failed.
 export function checkMissedDays(p) {
   const t = today();
