@@ -67,7 +67,7 @@ export default function Login() {
               <p className="soft" style={{ fontSize: 17, lineHeight: 1.55 }}>One account. Your quests, your bars, your rank — saved wherever you sign in.</p>
             </div>
             {/* ponytail: demo sign-in; plug Auth0's Google connection in here when there's a backend */}
-            <button className="btn" onClick={() => setStep('auth')} style={{ height: 56, background: '#fff', color: 'var(--fg)', fontSize: 17, gap: 12, border: '1px solid var(--line2)', boxShadow: 'var(--shadow)' }}>
+            <button className="btn" onClick={() => setStep('auth')} style={{ height: 56, background: '#fff', color: '#10182B', fontSize: 17, gap: 12, border: '1px solid var(--line2)', boxShadow: 'var(--shadow)' }}>
               <span className="g-mark">G</span>Continue with Google
             </button>
             <p className="muted" style={{ fontSize: 13 }}>Demo sign-in · progress is saved in this browser only.</p>

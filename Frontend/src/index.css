@@ -1,15 +1,16 @@
 :root {
-  /* Solo Leveling "System" theme — a white page with black System cards.
-     Page: white, dark text, deep accents · Cards: black, framed by glowing neon rails, light text · Red: penalties only · Gold: coins. */
-  --bg: #FBFCFE; --deep: #FFFFFF; --panel: #F4F6FB; --raised: #EAEFF7;
-  --shadow: 0 1px 2px rgba(16, 24, 43, .05), 0 8px 24px rgba(16, 24, 43, .08);
-  --backdrop: rgba(10, 14, 24, .55);
-  --line: #D3DAE8; --line2: #B8C3D9; --line3: #9AAAC7;
-  --fg: #10182B; --soft: #2A3752; --muted: #55658A; --dim: #7A88A8; --on-accent: #FFFFFF;
-  --blue: #1C7ED6; --blue-soft: #0B3A7A; --blue-deep: #BFE3FF; --sapphire: #1E6FE0; --sapphire-light: #2E6FD1;
-  --violet: #7C3FE0; --violet-soft: #3A2257; --violet-deep: #D2B8FF;
-  --gold: #B8791A; --gold-soft: #8A5A0F;
-  --red: #E0293E; --red-strong: #7D0018; --maroon: #FBDCE0;
+  /* Solo Leveling "System" theme — dark mode: a night-blue page with black System cards.
+     Page: deep navy, light text, neon accents · Cards: black, framed by glowing neon rails, light text · Red: penalties only · Gold: coins. */
+  color-scheme: dark;
+  --bg: #0A0D14; --deep: #10141E; --panel: #0D1119; --raised: #1A2030;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .45);
+  --backdrop: rgba(0, 0, 0, .65);
+  --line: #222938; --line2: #313A4F; --line3: #45506A;
+  --fg: #F2F5FA; --soft: #C3CCDC; --muted: #8C96AC; --dim: #6E788E; --on-accent: #05070B;
+  --blue: #4FB8FF; --blue-soft: #BFE3FF; --blue-deep: #0B3A7A; --sapphire: #1E6FE0; --sapphire-light: #5A9BFF;
+  --violet: #A56BFF; --violet-soft: #D2B8FF; --violet-deep: #3A2257;
+  --gold: #F2B84B; --gold-soft: #F6D38E;
+  --red: #FF5C70; --red-strong: #FFD9DE; --maroon: #2B0A12;
   --r-sm: 4px; --r-md: 6px; --r-lg: 8px;
   --title: 'Rajdhani', 'Oxanium', sans-serif;
 }
@@ -138,8 +139,8 @@ h1, h2, p { margin: 0; }
 /* ---------- System windows — modelled on the show's NOTIFICATION / INVENTORY screens ---------- */
 body {
   background:
-    radial-gradient(1100px 420px at 50% -12%, rgba(30, 111, 224, .08), transparent 65%),
-    radial-gradient(900px 500px at 100% 100%, rgba(124, 63, 224, .05), transparent 70%),
+    radial-gradient(1100px 420px at 50% -12%, rgba(30, 111, 224, .14), transparent 65%),
+    radial-gradient(900px 500px at 100% 100%, rgba(124, 63, 224, .09), transparent 70%),
     var(--bg);
   background-attachment: fixed;
 }
