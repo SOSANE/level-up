@@ -70,7 +70,7 @@ export default function Profile() {
           {(() => {
             const MAT_DESC = { VITALS: 'Forged from sweat. Drops from Vitals quests.', PHOTO: 'Grows where proof is shown. Drops from Photo quests.', FOCUS: 'Condensed focus. Drops from Focus quests.', HONOR: 'A promise kept. Drops from Honor quests.' };
             const items = [
-              ...Object.entries(MATERIAL).map(([k, m]) => ({ key: m.name, name: m.name, desc: MAT_DESC[k], glow: m.color, icon: <MaterialIcon color="#F4F8FF" size={30} /> })),
+              ...Object.entries(MATERIAL).map(([k, m]) => ({ key: m.name, name: m.name, desc: MAT_DESC[k], glow: m.color, icon: <MaterialIcon color={m.color} size={30} /> })),
               ...RARE.map((x) => ({ key: x.name, name: x.name, desc: x.desc, glow: x.color, icon: <LootIcon kind={x.kind} color={x.color} size={30} /> })),
               ...POTIONS.map((it) => ({ key: it.id, name: it.name, desc: `${it.desc}. Buy it in the marketplace.`, glow: it.color, icon: <Potion color={it.color} size={22} />, potion: true, drink: it.drink }))
             ].map((it) => ({ ...it, n: it.potion ? player.items[it.key] || 0 : player.materials[it.name] || 0 }));

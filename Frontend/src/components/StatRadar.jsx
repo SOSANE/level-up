@@ -17,14 +17,14 @@ export default function StatRadar({ player }) {
     <svg viewBox="0 0 280 220" className="radar" role="img"
       aria-label={`Stats: ${list.map((s) => `${s.name} ${s.value}`).join(', ')}`}>
       <defs>
-        <radialGradient id="radar-fill"><stop offset="0" stopColor="#4FB8FF" stopOpacity=".55" /><stop offset="1" stopColor="#A56BFF" stopOpacity=".35" /></radialGradient>
+        <radialGradient id="radar-fill"><stop offset="0" stopColor="#1C7ED6" stopOpacity=".35" /><stop offset="1" stopColor="#7C3FE0" stopOpacity=".22" /></radialGradient>
       </defs>
-      {[1, 0.66, 0.33].map((f) => <polygon key={f} points={ring(f)} fill="none" stroke="#2E4468" strokeWidth="1" />)}
-      {list.map((_, k) => { const [x, y] = at(k, R); return <line key={k} x1={CX} y1={CY} x2={x} y2={y} stroke="#2E4468" strokeWidth="1" />; })}
-      <polygon points={shape} fill="url(#radar-fill)" stroke="#BFE3FF" strokeWidth="1.6" style={{ filter: 'drop-shadow(0 0 6px #4FB8FF)' }} />
+      {[1, 0.66, 0.33].map((f) => <polygon key={f} points={ring(f)} fill="none" stroke="#D3DAE8" strokeWidth="1" />)}
+      {list.map((_, k) => { const [x, y] = at(k, R); return <line key={k} x1={CX} y1={CY} x2={x} y2={y} stroke="#D3DAE8" strokeWidth="1" />; })}
+      <polygon points={shape} fill="url(#radar-fill)" stroke="#1C7ED6" strokeWidth="1.8" />
       {list.map((s, k) => {
         const [x, y] = at(k, (R * s.value) / max);
-        return <circle key={s.name} cx={x} cy={y} r="4" fill={PROOF_COLOR[s.proof]} stroke="#fff" strokeWidth="1" />;
+        return <circle key={s.name} cx={x} cy={y} r="4" fill={PROOF_COLOR[s.proof]} stroke="#fff" strokeWidth="1.5" />;
       })}
       {list.map((s, k) => (
         <text key={`t${s.name}`} x={labelPos[k][0]} y={labelPos[k][1]} textAnchor={anchor[k]} className="radar-label" fill={PROOF_COLOR[s.proof]}>
